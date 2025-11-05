@@ -16,7 +16,6 @@ for (; ; ) {
          WriteLine ("You guessed correctly!");
          return;
       }
-      if (num > random) WriteLine ("Your guess is too high!");
-      else WriteLine ("Your guess is too low!");
+      WriteLine ($"Your guess is too {(num > random ? "high" : "low")}!");
    } else WriteLine ("Please enter a valid integer within 1 - 100!");
 }
