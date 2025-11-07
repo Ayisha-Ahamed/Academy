@@ -7,15 +7,19 @@
 // ------------------------------------------------------------------------------------------------
 using static System.Console;
 
-int random = new Random ().Next (1, 101);
-WriteLine ("Guess the number between 1 to 100");
-for (; ; ) {
-   Write ("Enter your guess: ");
-   if (int.TryParse (ReadLine (), out int num) && num > 0 && num <= 100) {
-      if (num == random) {
-         WriteLine ("You guessed correctly!");
-         return;
-      }
-      WriteLine ($"Your guess is too {(num > random ? "high" : "low")}!");
-   } else WriteLine ("Please enter a valid integer within 1 - 100!");
-}
+do {
+   Clear ();
+   int random = new Random ().Next (1, 101);
+   WriteLine ("Guess the number between 1 to 100");
+   for (int tries = 1; ; tries++) {
+      Write ("Enter your guess: ");
+      if (uint.TryParse (ReadLine (), out uint num) && num > 0 && num <= 100) {
+         if (num == random) {
+            WriteLine ($"You guessed the number in {tries} tries!");
+            break;
+         }
+         WriteLine ($"Your guess is too {(num > random ? "high" : "low")}!");
+      } else WriteLine ("Please enter a value between 1 and 100!");
+   }
+   Write ("Press 'Y' to continue");
+} while (ReadKey (true).Key == ConsoleKey.Y);
