@@ -15,11 +15,11 @@ do {
       Write ("Enter your guess: ");
       if (uint.TryParse (ReadLine (), out uint num) && num > 0 && num <= 100) {
          if (num == random) {
-            WriteLine ($"You guessed the number in {tries} tries!");
+            WriteLine ($"You guessed the number in {tries} tries");
             break;
          }
-         WriteLine ($"Your guess is too {(num > random ? "high" : "low")}!");
-      } else WriteLine ("Please enter a value between 1 and 100!");
+         WriteLine ($"Your guess is too {(num > random ? "high" : "low")}");
+      } else WriteLine ("Please enter a value between 1 and 100");
    }
-   Write ("Press 'Y' to continue");
+   Write ("Press 'Y' to play again");
 } while (ReadKey (true).Key == ConsoleKey.Y);
