@@ -10,15 +10,15 @@ using static System.Console;
 do {
    Clear ();
    WriteLine ("Guess the number between 1 and 100");
-   int random = new Random ().Next (1, 101), tries = 1;
-   bool isFound = false;
-   while (!isFound) {
+   int n = new Random ().Next (1, 101), tries = 0;
+   bool found = false;
+   while (!found) {
       Write ("Enter your guess: ");
       if (int.TryParse (ReadLine (), out int guess)) {
-         isFound = random == guess; tries++;
-         WriteLine ($"Your guess is {(isFound ? "correct" :
-            $"too {(guess > random ? "high" : "low")}")}");
-      } else WriteLine ("Please enter a number");
+         found = n == guess; tries++;
+         WriteLine ($"Your guess is {(found ? $"correct with {tries} tries"
+                                              : $"too {(guess > n ? "high" : "low")}")}");
+      }
    }
-   WriteLine ($"You guessed {random} in {tries} tries\nPress 'Y' to play again");
+   WriteLine ($"Press 'Y' to play again");
 } while (ReadKey (true).Key == ConsoleKey.Y);
