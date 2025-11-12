@@ -9,17 +9,19 @@ using static System.Console;
 
 do {
    Clear ();
-   int random = new Random ().Next (1, 101);
    WriteLine ("Guess the number between 1 to 100");
-   for (int tries = 1; ; tries++) {
-      Write ("Enter your guess: ");
-      if (uint.TryParse (ReadLine (), out uint num) && num > 0 && num <= 100) {
-         if (num == random) {
-            WriteLine ($"You guessed the number in {tries} tries");
-            break;
-         }
-         WriteLine ($"Your guess is too {(num > random ? "high" : "low")}");
-      } else WriteLine ("Please enter a value between 1 and 100");
+   int random = new Random ().Next (1, 101), tries = 1, guess = GetGuess ();
+   while (guess != random) {
+      WriteLine ($"Your guess is too {(guess > random ? "high" : "low")}"); tries++;
+      guess = GetGuess ();
    }
-   Write ("Press 'Y' to play again");
+   WriteLine ($"You guessed {random} in {tries} tries\nPress 'Y' to play again");
 } while (ReadKey (true).Key == ConsoleKey.Y);
+
+static int GetGuess () {
+   while (true) {
+      Write ("Enter your guess: ");
+      if (int.TryParse (ReadLine (), out int num) && num > 0 && num <= 100) return num;
+      WriteLine ("Please enter a value between 1 and 100");
+   }
+}
