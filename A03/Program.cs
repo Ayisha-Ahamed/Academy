@@ -10,27 +10,24 @@ using static System.Console;
 
 Write ("Enter puzzle string: ");
 var input = ReadLine () ?? "";
-if (!string.IsNullOrEmpty (input) && input.Distinct ().Count () == 7
-   && input.All (char.IsLetter)) {
+if (!string.IsNullOrEmpty (input) && input.Distinct ().Count () == 7 && input.All (char.IsLetter)) {
    var str = input.ToUpper ();
-   // Store the list of valid words paired with the number of letters used in the word.
-   var list = File.ReadAllLines ("words.txt")
-      .Where (word => word.Length > 3 && word.Contains (str[0]) && !word.Except (str).Any ())
-      .Select (a => (Word: a, LCount: a.Distinct ().Count ())).GroupBy (a => a.LCount >= 7).Reverse ().ToList ();
-   // Group list into pangrams and non-pangrams.
-   // Boolean expression is used as Key for grouping(Key is true for pangrams). 
-   int score = 0;
-   foreach (var group in list) {
+   // Filter valid words and group into pangrams and non-pangrams.
+   // Boolean expression is used as key for grouping(Key is true for pangrams).
+   var words = File.ReadAllLines ("words.txt")
+      .Where (w => w.Length > 3 && w.Contains (str[0]) && !w.Except (str).Any ())
+      .Select (w => (Word: w, IsPangram: w.Distinct ().Count () == 7))
+      .GroupBy (w => w.IsPangram).Reverse ().ToList ();
+   int total = 0;
+   foreach (var group in words) {
       // Sort the elements in nth group in descending order of word length.
-      var order = group.OrderByDescending (a => a.Word.Length).ToList ();
       if (group.Key == true) ForegroundColor = ConsoleColor.Green;
-      foreach (var (Word, LCount) in order) {
-         int len = Word.Length;
-         int length = len == 4 ? 1 : len + (group.Key == true ? 7 : 0);
-         score += length;
-         WriteLine ($"{length,3}. {Word}");
+      foreach (var (Word, IsPangram) in group.OrderByDescending (a => a.Word.Length).ToList ()) {
+         int len = Word.Length, score = len == 4 ? 1 : len + (IsPangram ? 7 : 0);
+         total += score;
+         WriteLine ($"{score,3}. {Word}");
       }
       ResetColor ();
    }
-   WriteLine ($"----\n{score} total");
+   WriteLine ($"----\n{total} total");
 } else WriteLine ("Invalid input. Please enter 7 distinct alphabetic characters");
