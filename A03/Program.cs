@@ -4,29 +4,27 @@
 // ------------------------------------------------------------------
 // Program.cs
 // A03: Spelling Bee.
-// Program prints Spelling bee solutions for seven letter input with first letter as the center.
+// Program prints Spelling bee solutions for input with first input letter as must-use character.
 // ------------------------------------------------------------------------------------------------
 using static System.Console;
 
-WriteLine ("Enter letters in pangram(uppercase): ");
-var input = ReadLine ();
-if (!string.IsNullOrWhiteSpace (input) && input.Distinct ().Count () == 7 && input.All (char.IsUpper)) {
-   // Filter valid words and group into pangrams and non-pangrams.
-   // Boolean expression is used as key for grouping(Key is true for pangrams).
+WriteLine ("Enter seven distinct letters: ");
+// Remove trailing spaces.
+// Null coalescent operator is used to make sure input is not null before Trim() operation.
+var input = (ReadLine () ?? "").Trim ().ToUpper ();
+// Filter valid words.
+if (input.All (char.IsLetter) && input.Distinct ().Count () == 7) {
    var words = File.ReadLines ("words.txt")
-      .Where (w => w.Length > 3 && w.Contains (input[0]) && !w.Except (input).Any ())
-      .Select (w => (Word: w, IsPangram: w.Distinct ().Count () == 7, w.Length))
-      .Select (w => new { w.Word, w.IsPangram, Score = w.Length == 4 ? 1 : w.Length + (w.IsPangram ? 7 : 0) })
-      .OrderByDescending (a => a.Score).GroupBy (a => a.IsPangram).ToList ();
-   int total = 0;
-   foreach (var group in words) {
-      if (group.Key == true) ForegroundColor = ConsoleColor.Green;
-      foreach (var w in group) {
-         int score = w.Score;
-         total += score;
-         WriteLine ($"{score,3}. {w.Word}");
-      }
+   .Where (w => w.Length > 3 && w.Contains (input[0]) && !w.Except (input).Any ())
+   .Select (w => {
+      bool isPangram = w.Distinct ().Count () == 7;
+      int len = w.Length, score = len == 4 ? 1 : len + (isPangram ? 7 : 0);
+      return (Word: w, IsPangram: isPangram, Score: score);
+   }).OrderByDescending (w => w.Score);
+   foreach (var (Word, IsPangram, Score) in words) {
+      if (IsPangram) ForegroundColor = ConsoleColor.Green;
+      WriteLine ($"{Score,3}. {Word}");
       ResetColor ();
    }
-   WriteLine ($"----\n{total} total");
-} else WriteLine ("Invalid input. Please enter 7 distinct uppercase letters");
+   WriteLine ($"----\n{words.Sum (w => w.Score)} total");
+} else WriteLine ("Invalid input. Please enter seven distinct alphabetic characters.");
