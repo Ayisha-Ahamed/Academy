@@ -4,13 +4,13 @@
 // ------------------------------------------------------------------
 // Program.cs
 // A03: Spelling Bee.
-// Program prints Spelling bee solutions for input with first input letter as must-use character.
+// Program prints spelling bee solutions for the given input with first input letter
+// as must-use character.
 // ------------------------------------------------------------------------------------------------
 using static System.Console;
 
-WriteLine ("Enter seven distinct letters: ");
+Write ("Enter seven distinct letters: ");
 // Remove trailing spaces.
-// Null coalescent operator is used to make sure input is not null before Trim() operation.
 var input = (ReadLine () ?? "").Trim ().ToUpper ();
 // Filter valid words.
 if (input.All (char.IsLetter) && input.Distinct ().Count () == 7) {
@@ -24,7 +24,7 @@ if (input.All (char.IsLetter) && input.Distinct ().Count () == 7) {
    foreach (var (Word, IsPangram, Score) in words) {
       if (IsPangram) ForegroundColor = ConsoleColor.Green;
       WriteLine ($"{Score,3}. {Word}");
-      ResetColor ();
+      if (IsPangram) ResetColor ();
    }
    WriteLine ($"----\n{words.Sum (w => w.Score)} total");
 } else WriteLine ("Invalid input. Please enter seven distinct alphabetic characters.");
