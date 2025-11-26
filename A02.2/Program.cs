@@ -4,13 +4,17 @@
 // ------------------------------------------------------------------
 // Program.cs
 // A02.2: Guessing game (LSB to MSB).
-// Program guesses the number between 0 - 255 by finding one bit at a time from LSB to MSB.
+// Program prints the number user thinks of (0 - 255) by finding one bit at a time from LSB to MSB.
 // ------------------------------------------------------------------------------------------------
 using static System.Console;
 
-WriteLine ("Think of a number between 0 - 255");
-Write ("Is the number odd? (y/n) ");
-WriteLine ($"\nYour number is {FindNumber (IsYPerssed ())}");
+do {
+   Clear ();
+   WriteLine ("Think of a number between 0 - 255");
+   Write ("Is the number odd? (y/n) ");
+   WriteLine ($"\nYour number is {FindNumber (IsYPerssed ())}");
+   Write ("Press 'Y' to continue");
+} while (ReadKey (true).Key == ConsoleKey.Y);
 
 // Gets user response(Y/N) and returns if Y is pressed
 static bool IsYPerssed () {
@@ -21,8 +25,10 @@ static bool IsYPerssed () {
    return isYPressed;
 }
 
+// Returns the number the user thinks of.
 static int FindNumber (bool isOdd) {
-   int num = isOdd ? 1 : 0;
+   int num = isOdd ? 1 : 0; // LSB of the number.
+   // Prompts user input to find ith MSB.
    for (int i = 1; i < 8; i++) {
       int rem = (1 << i) + num, pow = 1 << (i + 1);
       Write ($"Does your number leave a remainder of {rem} when divided by {pow}? (y/n) ");
