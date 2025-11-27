@@ -10,7 +10,6 @@
 using static System.Console;
 
 Write ("Enter seven distinct letters: ");
-// Remove trailing spaces.
 var input = (ReadLine () ?? "").Trim ().ToUpper ();
 // Filter valid words.
 if (input.All (char.IsLetter) && input.Distinct ().Count () == 7) {
@@ -22,9 +21,15 @@ if (input.All (char.IsLetter) && input.Distinct ().Count () == 7) {
       return (Word: w, IsPangram: isPangram, Score: score);
    }).OrderByDescending (w => w.Score);
    foreach (var (Word, IsPangram, Score) in words) {
-      if (IsPangram) ForegroundColor = ConsoleColor.Green;
-      WriteLine ($"{Score,3}. {Word}");
-      if (IsPangram) ResetColor ();
+      string str = $"{Score,3}. {Word}";
+      if (IsPangram) PrintPangram (str);
+      else WriteLine (str);
    }
    WriteLine ($"----\n{words.Sum (w => w.Score)} total");
 } else WriteLine ("Invalid input. Please enter seven distinct alphabetic characters.");
+
+static void PrintPangram (string str) {
+   ForegroundColor = ConsoleColor.Green;
+   WriteLine (str);
+   ResetColor ();
+}
