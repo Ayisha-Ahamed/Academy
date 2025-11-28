@@ -21,15 +21,13 @@ if (input.All (char.IsLetter) && input.Distinct ().Count () == 7) {
       return (Word: w, IsPangram: isPangram, Score: score);
    }).OrderByDescending (w => w.Score);
    foreach (var (Word, IsPangram, Score) in words) {
-      string str = $"{Score,3}. {Word}";
-      if (IsPangram) PrintPangram (str);
-      else WriteLine (str);
+      if (IsPangram) {
+         ForegroundColor = ConsoleColor.Green;
+         PrintScore (Score, Word);
+         ResetColor ();
+      } else PrintScore (Score, Word);
    }
    WriteLine ($"----\n{words.Sum (w => w.Score)} total");
 } else WriteLine ("Invalid input. Please enter seven distinct alphabetic characters.");
 
-static void PrintPangram (string str) {
-   ForegroundColor = ConsoleColor.Green;
-   WriteLine (str);
-   ResetColor ();
-}
+static void PrintScore (int score, string word) => WriteLine ($"{score,3}. {word}");
