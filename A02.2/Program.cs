@@ -4,35 +4,32 @@
 // ------------------------------------------------------------------
 // Program.cs
 // A02.2: Guessing game (LSB to MSB).
-// Program prints the number user thinks of (0 - 255) by finding one bit at a time from LSB to MSB.
+// Program prints the random number (0 - 255) calculated from LSB to MSB through user response.
 // ------------------------------------------------------------------------------------------------
 using static System.Console;
 
 do {
    Clear ();
-   WriteLine ("Think of a number between 0 - 255");
-   Write ("Is the number odd? (y/n) ");
-   WriteLine ($"\nYour number is {FindNumber (IsYPerssed ())}");
-   Write ("Press 'Y' to continue");
+   Write ("Think of a number between 0 - 255\nIs the number odd? (y/n) ");
+   Write ($"\nYour number is {FindNumber (GetKey () == ConsoleKey.Y)}\nPress 'Y' to continue");
 } while (ReadKey (true).Key == ConsoleKey.Y);
 
-// Gets user response(Y/N) and returns if Y is pressed
-static bool IsYPerssed () {
+// Returns user response (Y/N)
+static ConsoleKey GetKey () {
    ConsoleKey key = ReadKey (true).Key;
    while (!(key is ConsoleKey.Y or ConsoleKey.N)) key = ReadKey (true).Key;
-   bool isYPressed = key == ConsoleKey.Y;
-   Write ($"{(isYPressed ? "Yes" : "No")}\n");
-   return isYPressed;
+   WriteLine (key == ConsoleKey.Y ? "Yes" : "No");
+   return key;
 }
 
-// Returns the number the user thinks of.
+// Returns the number calculated from user response.
 static int FindNumber (bool isOdd) {
-   int num = isOdd ? 1 : 0; // LSB of the number.
+   int num = isOdd ? 1 : 0, rem, pow; // LSB of the number.
    // Prompts user input to find ith MSB.
    for (int i = 1; i < 8; i++) {
-      int rem = (1 << i) + num, pow = 1 << (i + 1);
+      rem = (1 << i) + num; pow = 1 << (i + 1);
       Write ($"Does your number leave a remainder of {rem} when divided by {pow}? (y/n) ");
-      num = IsYPerssed () ? rem : num;
+      num = GetKey () == ConsoleKey.Y ? rem : num;
    }
    return num;
 }
