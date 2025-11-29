@@ -16,9 +16,9 @@ do {
 
 // Returns the random number calculated from user response.
 static int FindNumber () {
-   int max = 256, min = 0, num = 0;
+   int max = 256, min = 0, num = 0, mid;
    for (int i = 0; i < 8; i++) {
-      int mid = (max + min) / 2;
+      mid = (max + min) / 2;
       Write ($"\nIs the number less than {mid}? (y/n) ");
       ConsoleKey key = ReadKey (true).Key; // Gets user response.
       while (!(key is ConsoleKey.Y or ConsoleKey.N)) key = ReadKey (true).Key;
