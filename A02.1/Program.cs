@@ -16,15 +16,15 @@ do {
 
 // Returns the random number calculated from user response.
 static int FindNumber () {
-   int max = 256, min = 0, num = 0, mid;
-   for (int i = 0; i < 8; i++) {
+   int max = 256, min = 0, num = 0, mid, bitlen = 7;
+   for (int i = 0; i <= bitlen; i++) {
       mid = (max + min) / 2;
       Write ($"\nIs the number less than {mid}? (y/n) ");
       ConsoleKey key = ReadKey (true).Key; // Gets user response.
       while (!(key is ConsoleKey.Y or ConsoleKey.N)) key = ReadKey (true).Key;
       Write (key == ConsoleKey.Y ? "Yes" : "No");
       if (key == ConsoleKey.N) {
-         num += (int)Math.Pow (2, 7 - i); // Converts binary to decimal.
+         num += (int)Math.Pow (2, bitlen - i); // Converts binary to decimal.
          min = mid;
       } else max = mid;
    }
