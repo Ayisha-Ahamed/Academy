@@ -20,9 +20,9 @@ static int FindNumber () {
    for (int i = 0; i <= bitlen; i++) {
       mid = (max + min) / 2;
       Write ($"\nIs the number less than {mid}? (y/n) ");
-      bool choice = ReadKey (true).Key == ConsoleKey.Y;
-      Write (choice ? "Yes" : "No");
-      if (!choice) {
+      bool isLower = ReadKey (true).Key == ConsoleKey.Y;
+      Write (isLower ? "Yes" : "No");
+      if (!isLower) {
          num += (int)Math.Pow (2, bitlen - i); // Converts binary to decimal.
          min = mid;
       } else max = mid;
