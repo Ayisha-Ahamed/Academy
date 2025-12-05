@@ -4,30 +4,35 @@
 // ------------------------------------------------------------------
 // Program.cs
 // A03: Spelling Bee.
-// Program prints spelling bee solutions for the given input with first input letter
-// as must-use character.
+// Program prints spelling bee solutions for given input with first letter as must-use character.
 // ------------------------------------------------------------------------------------------------
 using static System.Console;
 
 Write ("Enter seven distinct letters: ");
-var input = (ReadLine () ?? "").Trim ().ToUpper ();
-// Filter valid words.
+string input = (ReadLine () ?? "").Trim ().ToUpper ();
 if (input.All (char.IsLetter) && input.Distinct ().Count () == 7) {
    var words = File.ReadLines ("words.txt")
-   .Where (w => w.Length > 3 && w.Contains (input[0]) && !w.Except (input).Any ())
-   .Select (w => {
-      bool isPangram = w.Distinct ().Count () == 7;
-      int len = w.Length, score = len == 4 ? 1 : len + (isPangram ? 7 : 0);
-      return (Word: w, IsPangram: isPangram, Score: score);
-   }).OrderByDescending (w => w.Score);
-   foreach (var (Word, IsPangram, Score) in words) {
-      if (IsPangram) {
-         ForegroundColor = ConsoleColor.Green;
-         PrintScore (Score, Word);
-         ResetColor ();
-      } else PrintScore (Score, Word);
-   }
+   .Where (w => IsValid (w, input)).Select (GetScore) // Filter valid words into a tuple.
+   .OrderByDescending (w => w.Score).ToList ();
+   words.ForEach (PrintScore);
    WriteLine ($"----\n{words.Sum (w => w.Score)} total");
 } else WriteLine ("Invalid input. Please enter seven distinct alphabetic characters.");
 
-static void PrintScore (int score, string word) => WriteLine ($"{score,3}. {word}");
+// Prints the score to console
+static void PrintScore ((string Word, bool IsPangram, int Score) tp) {
+   if (tp.IsPangram) {
+      ForegroundColor = ConsoleColor.Green;
+      WriteLine ($"{tp.Score,3}. {tp.Word}");
+      ResetColor ();
+   } else WriteLine ($"{tp.Score,3}. {tp.Word}");
+}
+
+// Returns if the word is a valid spelling bee solution for the given input
+static bool IsValid (string w, string input) => w.Length > 3 && w.Contains (input[0]) && !w.Except (input).Any ();
+
+// Returns a tuple consisting of input, whether the input is a pangram and it's score
+static (string Word, bool IsPangram, int Score) GetScore (string word) {
+   bool isPangram = word.Distinct ().Count () == 7;
+   int len = word.Length, score = len == 4 ? 1 : len + (isPangram ? 7 : 0);
+   return (word, isPangram, score);
+}
