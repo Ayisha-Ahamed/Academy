@@ -14,17 +14,17 @@ do {
    Write ($"\nYour number is {FindNumber ()}\nPress 'Y' to play again");
 } while (ReadKey (true).Key == ConsoleKey.Y);
 
-// Returns the random number calculated from user response.
+// Returns the user guessed number
 static int FindNumber () {
-   int max = 256, min = 0, num = 0, mid, bitlen = 7;
-   for (int i = 0; i <= bitlen; i++) {
+   int max = 256, min = 0, num = 0, mid, bitLen = 7;
+   bool isLess;
+   for (int i = 0; i <= bitLen; i++) {
       mid = (max + min) / 2;
       Write ($"\nIs the number less than {mid}? (y/n) ");
-      bool isLess = ReadKey (true).Key == ConsoleKey.Y;
-      Write (isLess ? "Yes" : "No");
+      Write ((isLess = ReadKey (true).Key == ConsoleKey.Y) ? "Yes" : "No");
       if (isLess) max = mid;
       else {
-         num += (int)Math.Pow (2, bitlen - i); // Converts binary to decimal.
+         num += (int)Math.Pow (2, bitLen - i); // Converts binary to decimal
          min = mid;
       }
    }
