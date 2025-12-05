@@ -18,21 +18,21 @@ if (input.All (char.IsLetter) && input.Distinct ().Count () == 7) {
    WriteLine ($"----\n{words.Sum (w => w.Score)} total");
 } else WriteLine ("Invalid input. Please enter seven distinct alphabetic characters.");
 
-// Prints the score to console
-static void PrintScore ((string Word, bool IsPangram, int Score) tp) {
-   if (tp.IsPangram) {
-      ForegroundColor = ConsoleColor.Green;
-      WriteLine ($"{tp.Score,3}. {tp.Word}");
-      ResetColor ();
-   } else WriteLine ($"{tp.Score,3}. {tp.Word}");
+// Returns a tuple consisting of input, whether the input is a pangram and its score
+static (string Word, bool IsPangram, int Score) GetScore (string word) {
+   bool isPangram = word.Distinct ().Count () == 7;
+   int len = word.Length, score = len == 4 ? 1 : len + (isPangram ? 7 : 0);
+   return (word, isPangram, score);
 }
 
 // Returns if the word is a valid spelling bee solution for the given input
 static bool IsValid (string w, string input) => w.Length > 3 && w.Contains (input[0]) && !w.Except (input).Any ();
 
-// Returns a tuple consisting of input, whether the input is a pangram and it's score
-static (string Word, bool IsPangram, int Score) GetScore (string word) {
-   bool isPangram = word.Distinct ().Count () == 7;
-   int len = word.Length, score = len == 4 ? 1 : len + (isPangram ? 7 : 0);
-   return (word, isPangram, score);
+// Prints the score to console
+static void PrintScore ((string Word, bool IsPangram, int Score) tp) {
+   if (tp.IsPangram) {
+      ForegroundColor = ConsoleColor.Green;
+      WriteLine ($"{tp.Score, 3}. {tp.Word}");
+      ResetColor ();
+   } else WriteLine ($"{tp.Score, 3}. {tp.Word}");
 }
