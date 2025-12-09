@@ -24,8 +24,8 @@ static int FindNumber () {
       Write ((isLess = ReadKey (true).Key == ConsoleKey.Y) ? "Yes" : "No");
       if (isLess) max = mid;
       else {
-         num += (int)Math.Pow (2, bitLen - i); // Converts binary to decimal
          min = mid;
+         num += (int)Math.Pow (2, bitLen - i); // Converts binary to decimal
       }
    }
    return num;
