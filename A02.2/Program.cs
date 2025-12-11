@@ -8,28 +8,30 @@
 // ------------------------------------------------------------------------------------------------
 using static System.Console;
 
+const int NBIT = 1; // Nth bit value. Bits range from 0 - 7 for finding numbers below 256
+
 do {
    Clear ();
-   Write ("Think of a number between 0 - 255\nIs your number odd? (y/n) ");
+   Write ("Think of a number between 0 and 255\nIs your number odd? (y/n) ");
    Write ($"\nYour number is {FindNumber ()}\nPress 'Y' to play again");
 } while (ReadKey (true).Key == ConsoleKey.Y);
 
 // Returns the user guessed number
 static int FindNumber () {
-   int num = GetKey () == ConsoleKey.Y ? 1 : 0, rem, div; // LSB of the number
-   // Prompts user input to find ith MSB
-   for (int i = 1; i < 8; i++) {
-      rem = (1 << i) + num; div = 1 << (i + 1);
+   // Initialize LSB of the number
+   int num = IsYes () ? NBIT : 0, rem, div;
+   // Prompts user input to find nth MSB
+   for (int n = 1; n <= 7; n++) {
+      rem = (NBIT << n) + num; div = NBIT << (n + 1);
       Write ($"Does your number leave a remainder of {rem} when divided by {div}? (y/n) ");
-      if (GetKey () == ConsoleKey.Y) num = rem;
+      if (IsYes ()) num = rem;
    }
    return num;
 }
 
 // Returns user response (Y/N)
-static ConsoleKey GetKey () {
-   ConsoleKey key = ReadKey (true).Key;
-   while (!(key is ConsoleKey.Y or ConsoleKey.N)) key = ReadKey (true).Key;
-   WriteLine (key == ConsoleKey.Y ? "Yes" : "No");
-   return key;
+static bool IsYes () {
+   bool isYPressed = ReadKey (true).Key == ConsoleKey.Y;
+   WriteLine (isYPressed ? "Yes" : "No");
+   return isYPressed;
 }
