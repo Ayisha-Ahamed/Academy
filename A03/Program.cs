@@ -13,13 +13,11 @@ const int NLETTERS = 7; // Number of letters in spelling bee puzzle
 Write ("Enter seven distinct letters: ");
 string input = (ReadLine () ?? "").Trim ().ToUpper ();
 if (input.All (char.IsLetter) && IsPangram (input)) {
-   List<(string Word, bool IsPangram, int Score)> words = [.. File.ReadLines ("words.txt")
-   .Where (w => IsValid (w, input))
-   .Select (GetScore) // Filter valid words into a tuple
-   .OrderByDescending (w => w.Score)];
+   List<(string Word, bool IsPangram, int Score)> words = [.. File.ReadLines ("words.txt").Where (w => IsValid (w, input))
+                                                          .Select (GetScore).OrderByDescending (w => w.Score)];
    foreach (var group in words.GroupBy (a => a.IsPangram)) { // Boolean expression is used as key for grouping
-      if (group.Key == true) ForegroundColor = ConsoleColor.Green; // Key is true for group containing pangrams
-      group.ToList ().ForEach (PrintScore);
+      if (group.Key) ForegroundColor = ConsoleColor.Green; // Key is true for group containing pangrams
+      foreach (var tp in group) PrintScore (tp);
       ResetColor ();
    }
    WriteLine ($"----\n{words.Sum (w => w.Score)} total");
