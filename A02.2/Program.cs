@@ -4,7 +4,7 @@
 // ------------------------------------------------------------------
 // Program.cs
 // A02.2: Guessing game (LSB to MSB).
-// Program prints the random number (0 - 255) calculated from LSB to MSB through user response.
+// Program to find the number (0 - 255) based on the user response.
 // ------------------------------------------------------------------------------------------------
 using static System.Console;
 
@@ -19,11 +19,11 @@ do {
 // Returns the user guessed number
 static int FindNumber () {
    // Initialize LSB of the number
-   int num = IsYes () ? NBIT : 0, rem, div;
+   int num = IsYes () ? NBIT : 0, rem;
    // Prompts user input to find nth MSB
    for (int n = 1; n <= 7; n++) {
-      rem = (NBIT << n) + num; div = NBIT << (n + 1);
-      Write ($"Does your number leave a remainder of {rem} when divided by {div}? (y/n) ");
+      rem = (NBIT << n) + num;
+      Write ($"Does your number leave a remainder of {rem} when divided by {NBIT << (n + 1)}? (y/n) ");
       if (IsYes ()) num = rem;
    }
    return num;
