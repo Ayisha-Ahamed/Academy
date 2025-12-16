@@ -4,11 +4,11 @@
 // ------------------------------------------------------------------
 // Program.cs
 // A02.2: Guessing game (LSB to MSB).
-// Program to find the number (0 - 255) based on the user response.
+// Program to find the number between 0 and 255 based on the user response.
 // ------------------------------------------------------------------------------------------------
 using static System.Console;
 
-const int NBIT = 1; // Nth bit value. Bits range from 0 - 7 for finding numbers below 256
+const int LSB = 1; // LSB of the number.
 
 do {
    Clear ();
@@ -19,18 +19,18 @@ do {
 // Returns the user guessed number
 static int FindNumber () {
    // Initialize LSB of the number
-   int num = IsYes () ? NBIT : 0, rem;
-   // Prompts user input to find nth MSB
+   int num = IsYPressed () ? LSB : 0, rem;
+   // Prompts the user input to find (8 - n)th MSB where n ranges from 1 to 7
    for (int n = 1; n <= 7; n++) {
-      rem = (NBIT << n) + num;
-      Write ($"Does your number leave a remainder of {rem} when divided by {NBIT << (n + 1)}? (y/n) ");
-      if (IsYes ()) num = rem;
+      rem = (LSB << n) + num;
+      Write ($"Does your number leave a remainder of {rem} when divided by {LSB << (n + 1)}? (y/n) ");
+      if (IsYPressed ()) num = rem;
    }
    return num;
 }
 
-// Returns user response (Y/N)
-static bool IsYes () {
+// Returns if the user pressed 'Y'.
+static bool IsYPressed () {
    bool isYPressed = ReadKey (true).Key == ConsoleKey.Y;
    WriteLine (isYPressed ? "Yes" : "No");
    return isYPressed;
