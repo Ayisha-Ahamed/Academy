@@ -13,92 +13,111 @@ using static Math;
 
 class Program {
    static void Main () {
-      OutputEncoding = new UnicodeEncoding ();
-      List<List<int>> solved = [];
-      for (int i = 0; i < 8; i++) {
-         List<int> arr = [i]; // Place queen in first row ith column.
-         SolveNthQueen (1, arr, solved); // Calculate positions for subsequent queens.
-      }
-      for (int n = 0; n < solved.Count; n++) {
+      OutputEncoding = Encoding.UTF8;
+      var solver = new SolveEightQueens ();
+      solver.PrintBoard ();
+   }
+}
+
+class SolveEightQueens {
+   #region Constants-------------------------------------------------------------------------------
+   // Dimension of chess board (n x n).
+   const int DIM = 8;
+   #endregion--------------------------------------------------------------------------------------
+
+   #region Public Methods--------------------------------------------------------------------------
+   // Prints chess board on the console
+   public void PrintBoard () {
+      for (int n = 0; n < mSolved.Count; n++) {
          Clear ();
+         List<int> board = mSolved[n]; // nth solution
          WriteLine ($"Solution no: {n + 1}");
-         PrintBoard (solved[n]);
-         Write ("Press 'n' to move next");
+         WriteLine ("\n┏━━━┳━━━┳━━━┳━━━┳━━━┳━━━┳━━━┳━━━┓");
+         for (int row = 0; row < DIM; row++) {
+            Write ("┃ ");
+            int posOfQueen = board[row]; // Stores the position of queen in current row
+            for (int col = 0; col < DIM; col++) Write (col == posOfQueen ? "♛ ┃ " : "  ┃ ");
+            if (row != 7) WriteLine ("\n┣━━━╋━━━╋━━━╋━━━╋━━━╋━━━╋━━━╋━━━┫");
+         }
+         WriteLine ("\n┗━━━┻━━━┻━━━┻━━━┻━━━┻━━━┻━━━┻━━━┛");
+         Write ("Press 'N' to move next");
          while (ReadKey (true).Key != ConsoleKey.N) ;
       }
    }
+   #endregion--------------------------------------------------------------------------------------
 
-   // Returns all posible column positions for nth row
-   static List<int> GetNthRowPos (int n, List<int> sol) {
-      List<int> valid = [];
-      for (int col = 0; col < 8; col++) {
+   #region Constructors----------------------------------------------------------------------------
+   public SolveEightQueens () {
+      if (mSolved.Count == 0) {
+         // Place queen in first row ith column and calculate
+         for (int i = 0; i < DIM; i++) SolveNthQueen (1, [i]);
+      }
+   }
+
+   #endregion -------------------------------------------------------------------------------------
+
+   #region Private Methods-------------------------------------------------------------------------
+   // Returns all possible column positions for nth row
+   static List<int> GetValidColPos (int row, List<int> sol) {
+      List<int> validColPos = [];
+      foreach (var col in Enumerable.Range (0, DIM).Except (sol)) {
          if (sol.Contains (col)) continue;
          bool isValid = true;
-         for (int i = 0; i < sol.Count; i++)
+         for (int i = 0; i < sol.Count; i++) {
             // Verify column position is not affected by queens placed in diagonal position.
-            if (Abs (n - i) == Abs (col - sol[i])) {
+            if (Abs (row - i) == Abs (col - sol[i])) {
                isValid = false; break;
             }
-         if (isValid) valid.Add (col);
+         }
+         if (isValid) validColPos.Add (col);
       }
-      return valid;
+      return validColPos;
    }
 
    // Adds list n to solution if n is canonical.
-   static void AddIfValid (List<int> n, List<List<int>> solved) {
-      int[] nref = n.ToArray ();
+   static void AddIfValid (List<int> n) {
+      int[] nRotated = [.. n];
       for (int i = 0; i < 4; i++) {
-         nref = Rotate (nref);
-         if (IsDuplicate (HMirror (nref), solved) || IsDuplicate (VMirror (nref), solved) ||
-               IsDuplicate (nref, solved)) return;
+         nRotated = Rotate (nRotated);
+         if (IsDuplicate (HMirror (nRotated)) || IsDuplicate (VMirror (nRotated)) || IsDuplicate (nRotated)) return;
       }
-      solved.Add (n);
+      mSolved.Add (n);
    }
 
    // Returns if the solution is duplicate.
-   static bool IsDuplicate (int[] n, List<List<int>> solved) {
-      foreach (var sol in solved) if (sol.SequenceEqual (n)) return true;
-      return false;
-   }
+   static bool IsDuplicate (int[] sol) => mSolved.Any (arr => arr.SequenceEqual (sol));
 
    // Returns the vertical mirror of array n.
-   static int[] VMirror (int[] n) => n.Reverse ().ToArray ();
+   static int[] VMirror (int[] n) => [.. n.Reverse ()];
 
    // Returns the horizontal mirror of array n.
    static int[] HMirror (int[] n) {
-      var arr = new int[8];
-      for (int i = 0; i < 8; i++) arr[i] = 7 - n[i];
+      var arr = new int[DIM];
+      for (int i = 0; i < DIM; i++) arr[i] = DIM - n[i] - 1;
       return arr;
    }
 
    // Returns n rotated by 90 degrees in clockwise direction.
    static int[] Rotate (int[] n) {
-      int[] arr = new int[8];
-      for (int i = 0; i < 8; i++) arr[n[i]] = 7 - i;
+      int[] arr = new int[DIM];
+      for (int i = 0; i < DIM; i++) arr[n[i]] = DIM - i - 1;
       return arr;
    }
 
    // Search for position(s) to place nth queen in nth row.
-   static void SolveNthQueen (int n, List<int> currentSol, List<List<int>> solved) {
-      if (n >= 8) {
-         AddIfValid (currentSol, solved);
+   static void SolveNthQueen (int n, List<int> currentSol) {
+      if (n == DIM) {
+         AddIfValid (currentSol);
          return;
       }
       // If multiple solutions are found, the current solution is copied to the next iteration.
-      foreach (var pos in GetNthRowPos (n, currentSol)) {
-         List<int> newSol = [.. currentSol];
-         newSol.Add (pos);
-         SolveNthQueen (n + 1, newSol, solved);
-      }
+      foreach (var pos in GetValidColPos (n, currentSol))
+         SolveNthQueen (n + 1, [.. currentSol, pos]);
    }
+   #endregion--------------------------------------------------------------------------------------
 
-   static void PrintBoard (List<int> b) {
-      WriteLine ("┏━━━┳━━━┳━━━┳━━━┳━━━┳━━━┳━━━┳━━━┓");
-      for (int i = 0; i < 8; i++) {
-         Write ("┃ ");
-         for (int j = 0; j < 8; j++) Write (j == b[i] ? "♛ ┃ " : "  ┃ ");
-         if (i != 7) WriteLine ("\n┣━━━╋━━━╋━━━╋━━━╋━━━╋━━━╋━━━╋━━━┫");
-      }
-      WriteLine ("\n┗━━━┻━━━┻━━━┻━━━┻━━━┻━━━┻━━━┻━━━┛");
-   }
+   #region Private Data----------------------------------------------------------------------------
+   // Stores the solved results.
+   static List<List<int>> mSolved = [];
+   #endregion
 }
