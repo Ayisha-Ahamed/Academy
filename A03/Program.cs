@@ -13,17 +13,17 @@ const int NLETTERS = 7; // Number of letters in spelling bee puzzle
 Write ("Enter seven distinct letters: ");
 string input = (ReadLine () ?? "").Trim ().ToUpper ();
 if (input.All (char.IsLetter) && IsPangram (input)) {
-   List<(ConsoleColor Color, string Word, int Score)> words = [.. File.ReadLines ("words.txt").Where (w => IsValid (w, input))
-                                                              .Select (GetScore).OrderBy (w => w.Color)
-                                                              .ThenByDescending (w => w.Score)];
-   foreach (var (Color, Word, Score) in words) {
+   List<(ConsoleColor Color, string Word, int Score)> words = [.. File.ReadLines ("words.txt")
+                                                              .Where (w => IsValid (w, input)).Select (GetScore)];
+   foreach (var (Color, Word, Score) in words.OrderBy (w => w.Color).ThenByDescending (w => w.Score)) {
       ForegroundColor = Color;
-      WriteLine ($"{Score,3}. {Word}");
+      WriteLine ($"{Score, 3}. {Word}");
    }
+   ResetColor ();
    WriteLine ($"----\n{words.Sum (w => w.Score)} total");
 } else WriteLine ("Invalid input. Please enter seven distinct alphabetic characters.");
 
-// Returns a tuple consisting of input, foreground color and score
+// Returns a tuple consisting of console foreground color, word and score
 static (ConsoleColor Color, string Word, int Score) GetScore (string word) {
    (ConsoleColor color, int score) = IsPangram (word) ? (ConsoleColor.Green, NLETTERS) : (ConsoleColor.White, 0);
    int len = word.Length;
