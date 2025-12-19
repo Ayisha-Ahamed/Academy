@@ -12,14 +12,14 @@ const int NLETTERS = 7; // Number of letters in spelling bee puzzle
 
 Write ("Enter seven distinct letters: ");
 string input = (ReadLine () ?? "").Trim ().ToUpper ();
-int total = 0; // Stores the total score of the words in the solution.
+int total = 0; // Stores the total score of the words in the solution
 if (input.All (char.IsLetter) && IsPangram (input)) {
    List<(ConsoleColor Color, string Word, int Score)> words = [.. File.ReadLines ("words.txt")
                                                                .Where (w => IsValid (w, input)).Select (GetScore)
                                                                .OrderByDescending (w => w.Score)];
    foreach (var (Color, Word, Score) in words) {
       ForegroundColor = Color;
-      // Right align score with a width of 3.
+      // Right align score with a width of 3
       WriteLine ($"{Score, 3}. {Word}");
       total += Score;
    }
