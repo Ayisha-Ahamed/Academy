@@ -16,13 +16,12 @@ do {
 
 // Returns the user guessed number
 static int FindNumber () {
-   Write ("Is your number odd? (y/n) ");
-   // If the number is odd, set LSB to 1
-   int num = IsYPressed () ? 1 : 0, rem;
-   // Prompts the user input to find (8 - n)th MSB where n ranges from 1 to 7
-   for (int n = 1; n <= 7; n++) {
-      rem = ShiftOneByN (n) + num;
-      Write ($"Does your number leave a remainder of {rem} when divided by {ShiftOneByN (n + 1)}? (y/n) ");
+   int num = 0, rem, pow;
+   // Prompts the user input to find nth bit where n ranges from 0 to 7
+   for (int n = 0; n <= 7; n++) {
+      pow = PowerOfTwo (n); // Stores value of 2^n
+      rem = pow + num;
+      Write ($"Does your number leave a remainder of {rem} when divided by {2 * pow}? (y/n) ");
       if (IsYPressed ()) num = rem;
    }
    return num;
@@ -35,5 +34,5 @@ static bool IsYPressed () {
    return isYPressed;
 }
 
-// Left shifts bit 1 by n positions
-static int ShiftOneByN (int n) => 1 << n;
+// Calculates nth power of two using left shift operator
+static int PowerOfTwo (int n) => 1 << n;
