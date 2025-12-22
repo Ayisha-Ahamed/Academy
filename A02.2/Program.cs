@@ -19,7 +19,7 @@ static int FindNumber () {
    int num = 0, rem, pow;
    // Prompts the user input to find nth bit where n ranges from 0 to 7
    for (int n = 0; n <= 7; n++) {
-      pow = PowerOfTwo (n); // Stores value of 2^n
+      pow = PowerOfTwo (n); // Stores the value of 2 ^ n
       rem = pow + num;
       Write ($"Does your number leave a remainder of {rem} when divided by {2 * pow}? (y/n) ");
       if (IsYPressed ()) num = rem;
@@ -27,7 +27,7 @@ static int FindNumber () {
    return num;
 }
 
-// Returns if the user pressed 'Y'
+// Returns if the user entered 'Y'(Yes)
 static bool IsYPressed () {
    bool isYPressed = ReadKey (true).Key == ConsoleKey.Y;
    WriteLine (isYPressed ? "Yes" : "No");
