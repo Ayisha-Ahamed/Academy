@@ -34,8 +34,9 @@ static (ConsoleColor Color, string Word, int Score) GetScore (string word) {
    return (color, word, score + (len == 4 ? 1 : len));
 }
 
-// Returns if the word is made up of seven distinct characters
+// Returns true if the word is made up of seven distinct characters
 static bool IsPangram (string word) => word.Distinct ().Count () == NLETTERS;
 
-// Returns if the word is a valid spelling bee solution for the given input
-static bool IsValid (string w, string input) => w.Length > 3 && w.Contains (input[0]) && !w.Except (input).Any ();
+// Returns true if the word is a valid spelling bee solution for the given input
+static bool IsValid (string word, string input) => word.Length > 3 && word.Contains (input[0]) 
+                                                   && !word.Except (input).Any ();
