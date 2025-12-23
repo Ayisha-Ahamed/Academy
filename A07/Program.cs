@@ -13,24 +13,43 @@ namespace A07;
 class Program {
 
    static void Main () {
-      do {
+      TestParse ();
+      Write ("Press 'Y' to continue");
+      while (ReadKey (true).Key == ConsoleKey.Y) {
          Clear ();
          Write ("Enter number: ");
-         var input = ReadLine () ?? "";
+         var input = (ReadLine () ?? "").Trim ().ToLower ();
          if (TryParse (input, out double num)) WriteLine (num);
          else WriteLine ("Not a double");
          Write ("Press 'Y' to continue");
-      } while (ReadKey (true).Key == ConsoleKey.Y);
+      }
    }
 
    // Returns true if the input string is a valid double
    static bool TryParse (string input, out double num) {
-      num = Double.NaN;
+      num = double.NaN;
       try {
          num = new Parse (input).Value;
          return true;
       } catch {
          return false;
+      }
+   }
+
+   // Method to test Parse implementation
+   static void TestParse () {
+      ResetColor ();
+      string[] testcase = ["123.45", "123.45e.45", "-123.45e5", "123.45.45", "123.45e-4",
+      "123e45e2", "123abc"];
+      foreach (var test in testcase) {
+         bool isNumber = double.TryParse (test, out double parsed);
+         if (TryParse (test, out double num) && num == parsed || !isNumber)
+            WriteLine ($"{test,-10}  |  Pass");
+         else {
+            ForegroundColor = ConsoleColor.DarkRed;
+            WriteLine ($"{test,-10}  |  Fail");
+            ResetColor ();
+         }
       }
    }
 
@@ -85,9 +104,11 @@ class Program {
             switch (c) {
                case '.': {
                      if (prevState is State.Whole) {
-                        int currentIndex = mN;
-                        double fraction = GetLiteral () * Math.Pow (0.1, mN - currentIndex);
+                        int currentIndex = mN, len;
+                        double fraction = GetLiteral () * Math.Pow (0.1, len = mN - currentIndex);
                         parsed += parsed < 0 ? -fraction : fraction;
+                        // Round number up to converted decimal places
+                        parsed = Math.Round (parsed, len);
                         prevState = State.Fraction; break;
                      } else throw new Exception ();
                   }
