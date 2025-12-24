@@ -39,11 +39,11 @@ class Program {
    // Method to test Parse implementation
    static void TestParse () {
       ResetColor ();
-      string[] testcase = ["123.45", "123.45e.45", "-123.45e5", "123.45.45", "123.45e-4",
-      "123e45e2", "123abc"];
+      string[] testcase = ["123.45","+123.45" ,"123.45e.45", "-123.45e5", "123.45.45", "123.45e-4",
+      "123e45e2", "123abc", "e34", ".32"];
       foreach (var test in testcase) {
-         bool isNumber = double.TryParse (test, out double parsed);
-         if (TryParse (test, out double num) && num == parsed || !isNumber)
+         bool isDouble = double.TryParse (test, out double parsed);
+         if (TryParse (test, out double num) && num == parsed || !isDouble)
             WriteLine ($"{test,-10}  |  Pass");
          else {
             ForegroundColor = ConsoleColor.DarkRed;
@@ -53,11 +53,11 @@ class Program {
       }
    }
 
-   // Extracting double from string takes place by dividing double into parts such as whole, fraction and exponent
-   // Each part is made up of integers with whole and exponent parts having  possible signed values
+   // Extracting double from string takes place by dividing double into parts such as whole(before decimal point),
+   // fraction(after decimal point) and exponent. Each part is made up of integers with whole and exponent parts having
+   // possible signed values
    class Parse {
       #region Enums -------------------------------------------------------------------------------
-      // Tracks the current part of the double (whole, fraction, exponent) processed by the methods
       enum State {
          Whole,
          Fraction,
@@ -89,39 +89,38 @@ class Program {
 
       // Returns signed number converted from string
       int GetSignedLiteral () {
-         int sign = 1;
-         if (mText[mN] is '+' or '-')
-            if (mText[mN++] is '-') sign = -1;
+         int sign = mText[mN] is '-' ? -1 : 1;
+         if (mText[mN] is '+' or '-') mN++;
          return GetLiteral () * sign;
       }
 
       // Returns double converted from input string
       double GetDouble () {
-         double parsed = GetSignedLiteral ();
+         double num = GetSignedLiteral ();
+         // Tracks the current part of the double (whole, fraction, exponent) processed by the methods
          State prevState = State.Whole;
          while (mN < mText.Length) {
-            char c = mText[mN++];
-            switch (c) {
+            switch (mText[mN++]) {
                case '.': {
                      if (prevState is State.Whole) {
-                        int currentIndex = mN, len;
-                        double fraction = GetLiteral () * Math.Pow (0.1, len = mN - currentIndex);
-                        parsed += parsed < 0 ? -fraction : fraction;
+                        int start = mN, len;
+                        double fraction = GetLiteral () * Math.Pow (0.1, len = mN - start);
+                        num += num < 0 ? -fraction : fraction;
                         // Round number up to converted decimal places
-                        parsed = Math.Round (parsed, len);
+                        num = Math.Round (num, len);
                         prevState = State.Fraction; break;
                      } else throw new Exception ();
                   }
                case 'e': {
                      if (prevState is State.Whole or State.Fraction) {
-                        parsed *= Math.Pow (10, GetSignedLiteral ());
+                        num *= Math.Pow (10, GetSignedLiteral ());
                         prevState = State.Exponent; break;
                      } else throw new Exception ();
                   }
                default: throw new Exception ();
             }
          }
-         return parsed;
+         return num;
       }
       #endregion
 
