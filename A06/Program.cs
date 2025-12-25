@@ -22,13 +22,12 @@ class Program {
 class SolveEightQueen {
 
    #region Constructors----------------------------------------------
-   public SolveEightQueen () => SolveNthQueen (0, []);
+   public SolveEightQueen () => Solve (0, []);
    #endregion
 
    #region Helper Methods--------------------------------------------
    // Adds canonical solution to mSolution
-   void AddValidSol (List<int> n) {
-      int[] sol = [.. n];
+   void AddValidSol (int[] sol) {
       for (int i = 0; i < 4; i++) {
          if (IsDuplicate (sol) || IsVerticalMirror (sol) || IsHorizontalMirror (sol)) return;
          if (i != 3) sol = Rotate (sol); // Rotate solution by 90°
@@ -37,15 +36,15 @@ class SolveEightQueen {
       PrintBoard (sol);
    }
 
-   // Returns all possible column positions for nth row
-   List<int> GetValidColPos (int row, List<int> sol) {
+   // Returns all column positions where a queen can be placed in the given row
+   List<int> GetValidColPos (int row, int[] sol) {
       List<int> validColPos = [];
       bool isValid;
       // Eliminate previously occupied column positions
       foreach (var col in Enumerable.Range (0, NQUEENS).Except (sol)) {
          isValid = true;
-         for (int i = 0; i < sol.Count; i++) {
-            // Check if current column is safe from other queens diagonally
+         for (int i = 0; i < sol.Length; i++) {
+            // Check if diagonal axis of current column position is occupied
             if (Abs (row - i) == Abs (col - sol[i])) {
                isValid = false; break;
             }
@@ -92,15 +91,19 @@ class SolveEightQueen {
       return arr;
    }
 
-   // Finds safe position for nth queen with respect to current solution
-   public void SolveNthQueen (int n, List<int> currentSol) {
+   // Calculates possible positions to place eight queens in the chess board
+   // Variable n represents the row (ranges from 0 to 7) where the queen is to be placed
+   public void Solve (int n, int[] sol) {
+      // Return if all eight queens are placed
       if (n == NQUEENS) {
-         AddValidSol (currentSol);
+         // Add only canonical solution to the list
+         AddValidSol (sol);
          return;
       }
-      // Recursively call method for all possible positions of next queen 
-      foreach (var pos in GetValidColPos (n, currentSol))
-         SolveNthQueen (n + 1, [.. currentSol, pos]);
+      // Recursively call method for every valid column position
+      foreach (var validCol in GetValidColPos (n, sol))
+         // Update solution and solve for the next row
+         Solve (n + 1, [.. sol, validCol]);
    }
    #endregion
 
@@ -110,7 +113,7 @@ class SolveEightQueen {
    #endregion
 
    #region Private Data----------------------------------------------
-   // Stores the solved results
+   // List of canonical solutions
    List<int[]> mSolutions = [];
    #endregion
 }
