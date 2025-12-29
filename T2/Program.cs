@@ -39,14 +39,14 @@ class FindPassword {
    // Moves dial to the left
    void MoveLeft (int pos) {
       int temp = mDial - pos;
-      if (temp < 0) temp = 100 + temp;
+      while (temp < 0) temp = 100 + temp;
       mDial = temp;
    }
 
    // Moves dial to the right
    void MoveRight (int pos) {
       int temp = mDial + pos;
-      if (temp > 99) temp = temp - 100;
+      while (temp > 99) temp = temp - 100;
       mDial = temp;
    }
 }
