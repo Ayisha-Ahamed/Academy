@@ -5,13 +5,13 @@
 // Program.cs
 // T01: CONSOLE TEXT EDITOR WITH UNDO REDO.
 // ------------------------------------------------------------------------------------------------
+using System;
 using System.Text;
 
 namespace T1;
 
 class Program {
    static void Main (string[] args) {
-      new StringBuilder ("hello").Remove (2, 3);
       Console.Write ("> ");
       var input = Console.ReadLine () ?? "";
       var editor = new TextEditor ();
@@ -43,16 +43,24 @@ class TextEditor {
 
    int mCount => mEditor.Count;
 
+   // Points to the index of current copy of the editor in use
    int mCurrentCopy;
+
+   // Store whether last operation was undo
+   bool IsLastOpUndo;
 
    public TextEditor () => mCurrentCopy = 0;
 
+   /// <summary>Add text to editor</summary>
    public void Add (string text) {
+      IsLastOpUndo = false;
       mEditor.Add (text);
       mCopies.Add ([.. mEditor]);
    }
 
+   /// <summary>Delete specified number of characters in editor</summary>
    public void Delete (int chars) {
+      IsLastOpUndo = false;
       if (chars <= 0) {
          mCopies.Add ([.. mEditor]);
          return;
@@ -70,12 +78,12 @@ class TextEditor {
             Console.WriteLine ("Nothing to delete!");
             return;
          }
-         mEditor.RemoveRange (mCount - 2, mCount - 1);
-         //mCopies.Add ([.. mEditor]);
+         mEditor.RemoveAt(mCount - 1);
       }
       Delete (chars - lastWordLen);
    }
 
+   /// <summary>Display text to console</summary>
    public void Display () {
       foreach (var text in mEditor) {
          Console.Write (text);
@@ -83,7 +91,9 @@ class TextEditor {
       Console.WriteLine ();
    }
 
+   /// <summary>Undo last changes made in editor</summary>
    public void Undo () {
+      IsLastOpUndo = true;
       int count = mCopies.Count;
       if (count > 1) {
          mCurrentCopy = count - 2;
@@ -93,12 +103,14 @@ class TextEditor {
       }
    }
 
+   /// <summary>Redo last changes made in editor</summary>
    public void Redo () {
       int count = mCopies.Count;
-      if (mCurrentCopy + 1 < count) {
+      if (mCurrentCopy + 1 < count && IsLastOpUndo) {
          mEditor = mCopies[++mCurrentCopy];
       } else {
          Console.WriteLine ("Nothing to redo!");
       }
+      IsLastOpUndo = false;
    }
 }
