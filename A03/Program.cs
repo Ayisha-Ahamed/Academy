@@ -30,7 +30,7 @@ if (input.All (char.IsLetter) && IsPangram (input)) {
 static WordResult EvaluateWord (string word) {
    (ConsoleColor color, int score) = IsPangram (word) ? (ConsoleColor.Green, NLETTERS) : (ConsoleColor.Gray, 0);
    int len = word.Length;
-   return new WordResult { Color = color, Word = word, Score = score + (len == 4 ? 1 : len) };
+   return new WordResult (color, word, score + (len == 4 ? 1 : len));
 }
 
 // Returns true if the word is made up of seven distinct characters
@@ -41,13 +41,14 @@ static bool IsValid (string word, string input) => word.Length > 3 && word.Conta
                                                    && !word.Except (input).Any ();
 
 // Represents the result after analyzing the word
-struct WordResult {
+readonly struct WordResult (ConsoleColor color, string word, int score) {
+
    /// <summary>Represents the console color of the word to be displayed</summary>
-   public ConsoleColor Color;
+   public readonly ConsoleColor Color = color;
 
    /// <summary>Represents the word to be displayed</summary>
-   public string Word;
+   public readonly string Word = word;
 
    /// <summary>Represents the score of the word</summary>
-   public int Score;
+   public readonly int Score = score;
 }
