@@ -9,7 +9,7 @@ using static System.Console;
 
 namespace A07;
 
-#region class Program ------------------------------------------------------------------------------
+#region class Program -----------------------------------------------------------------------------
 class Program {
    static void Main () {
       string[] testcase = ["23.","123.45","+123.45","++123.45" ,"123.45e.45", "-123.45e5", "123.45.45",
@@ -28,7 +28,7 @@ class Program {
          else WriteLine ("Not a double");
          Write ("Press 'Y' to continue");
       }
-      // Method to print test results
+      // Displays test results to the console
       static void PrintResult (string result) {
          ForegroundColor = result == "Pass" ? ConsoleColor.Green : ConsoleColor.DarkRed;
          WriteLine (result);
@@ -37,20 +37,16 @@ class Program {
       // Returns true if Parse implementation successfully converts input string to double
       static bool TryParse (string input, out double num) {
          num = 0;
-         try {
-            num = new Parse (input).Double;
-         } catch {
-            return false;
-         }
+         try { num = new Parse (input).Double; } catch { return false; }
          return true;
       }
    }
 }
 #endregion
 
-#region class Parse --------------------------------------------------------------------------------
+#region class Parse -------------------------------------------------------------------------------
 class Parse {
-   #region Constructor --------------------------------------------
+   #region Constructor ----------------------------------------------
    /// <summary>
    /// Initialize class with input string. 
    /// Set the index to be processed to starting position. 
@@ -63,12 +59,12 @@ class Parse {
    }
    #endregion
 
-   #region Properties ---------------------------------------------
-   // Returns double value converted from input string
+   #region Properties -----------------------------------------------
+   /// <summary>Returns double value converted from input string</summary>
    public double Double => mDouble;
    #endregion
 
-   #region Implementation -----------------------------------------
+   #region Implementation -------------------------------------------
    // Returns the number converted from the string
    int GetLiteral () {
       int num = 0;
@@ -80,9 +76,12 @@ class Parse {
    // Returns signed number converted from string
    int GetSignedLiteral () {
       if (mIdx >= mInput.Length) throw new Exception ();
-      int sign = mInput[mIdx] is '-' ? -1 : 1;
-      if (mInput[mIdx] is '+' or '-') mIdx++;
-      return GetLiteral () * sign;
+      bool isNegative = false;
+      if (mInput[mIdx] is '+' or '-') {
+         isNegative = mInput[mIdx] is '-';
+         mIdx++;
+      }
+      return GetLiteral () * (isNegative ? -1 : 1);
    }
 
    // Returns double converted from input string
@@ -115,7 +114,7 @@ class Parse {
    }
    #endregion
 
-   #region Private Data -------------------------------------------
+   #region Private Data ---------------------------------------------
    readonly string mInput; // Copy of input string
    int mIdx;          // Stores the index position of input string to be processed
    double mDouble;    // Stores the number converted from input string
@@ -123,7 +122,7 @@ class Parse {
 }
 #endregion
 
-#region enum EParsed -------------------------------------------------------------------------------
+#region enum EParsed ------------------------------------------------------------------------------
 /// <summary>Defines the parsing states used when converting a numeric string into a double</summary>
 public enum EParsed {
    /// <summary>Indicates that digits before decimal point (whole part) have been parsed</summary>
