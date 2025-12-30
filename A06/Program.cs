@@ -18,14 +18,14 @@ class Program {
    }
 }
 
-# region Class SolveEightQueens--------------------------------------------------------------------
+# region class SolveEightQueens --------------------------------------------------------------------
 class SolveEightQueen {
 
-   #region Constructors----------------------------------------------
+   #region Constructors ----------------------------------------------
    public SolveEightQueen () => Solve (0, []);
    #endregion
 
-   #region Helper Methods--------------------------------------------
+   #region Implementation --------------------------------------------
    // Adds canonical solution to mSolution
    void AddValidSol (int[] sol) {
       for (int i = 0; i < 4; i++) {
@@ -70,8 +70,7 @@ class SolveEightQueen {
    // Displays solution to the console
    void PrintBoard (int[] board) {
       Clear ();
-      WriteLine ("The twelve unique solutions of 8 queens are: ");
-      WriteLine ($"\nSolution no: {mSolutions.Count}");
+      WriteLine ($"The twelve unique solutions of 8 queens are:\n\nSolution no: {mSolutions.Count}");
       WriteLine ("┏━━━┳━━━┳━━━┳━━━┳━━━┳━━━┳━━━┳━━━┓");
       for (int row = 0; row < NQUEENS; row++) {
          Write ("┃ ");
@@ -107,12 +106,12 @@ class SolveEightQueen {
    }
    #endregion
 
-   #region Constants-------------------------------------------------
+   #region Constants -------------------------------------------------
    // Number of queens in the chess board
    const int NQUEENS = 8;
    #endregion
 
-   #region Private Data----------------------------------------------
+   #region Private Data ----------------------------------------------
    // List of canonical solutions
    List<int[]> mSolutions = [];
    #endregion
