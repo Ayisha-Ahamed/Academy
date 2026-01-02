@@ -5,11 +5,15 @@ class EvalException : Exception {
 }
 
 class Evaluator {
+   /// <summary>Gets previous token evaluated in Evaluator</summary>
+   public Token? GetPrevToken { get; private set; }
+
    public double Evaluate (string text) {
       List<Token> tokens = new ();
       var tokenizer = new Tokenizer (this, text);
       for (; ; ) {
          var token = tokenizer.Next ();
+         GetPrevToken = token;
          if (token is TEnd) break;
          if (token is TError err) throw new EvalException (err.Message);
          tokens.Add (token);
@@ -25,7 +29,7 @@ class Evaluator {
       while (mOperators.Count > 0) ApplyOperator ();
       double f = mOperands.Pop ();
       if (tVariable != null) mVars[tVariable.Name] = f;
-      return f; 
+      return f;
    }
 
    public int BasePriority { get; private set; }
@@ -38,8 +42,8 @@ class Evaluator {
 
    void Process (Token token) {
       switch (token) {
-         case TNumber num: 
-            mOperands.Push (num.Value); 
+         case TNumber num:
+            mOperands.Push (num.Value);
             break;
          case TOperator op:
             while (mOperators.Count > 0 && mOperators.Peek ().Priority > op.Priority)
@@ -60,6 +64,7 @@ class Evaluator {
       var op = mOperators.Pop ();
       var f1 = mOperands.Pop ();
       if (op is TOpFunction func) mOperands.Push (func.Evaluate (f1));
+      else if (op is TOpUnary unary) mOperands.Push (unary.Evaluate (f1));
       else if (op is TOpArithmetic arith) {
          var f2 = mOperands.Pop ();
          mOperands.Push (arith.Evaluate (f2, f1));

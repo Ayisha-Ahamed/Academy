@@ -39,7 +39,7 @@ class TOpArithmetic : TOperator {
 
    public double Evaluate (double a, double b) {
       return Op switch {
-         '+' => a + b, '-' => a - b, 
+         '+' => a + b, '-' => a - b,
          '*' => a * b, '/' => a / b,
          '^' => Math.Pow (a, b),
          _ => throw new EvalException ($"Unknown operator: {Op}"),
@@ -55,7 +55,7 @@ class TOpFunction : TOperator {
 
    public double Evaluate (double f) {
       return Func switch {
-         "sin" => Math.Sin (D2R (f)), 
+         "sin" => Math.Sin (D2R (f)),
          "cos" => Math.Cos (D2R (f)),
          "tan" => Math.Tan (D2R (f)),
          "sqrt" => Math.Sqrt (f),
@@ -69,6 +69,22 @@ class TOpFunction : TOperator {
 
       double D2R (double f) => f * Math.PI / 180;
       double R2D (double f) => f * 180 / Math.PI;
+   }
+}
+
+// Implements unary operation on operand (unary plus, unary minus)
+class TOpUnary : TOperator {
+   public TOpUnary (Evaluator eval, char ch) : base (eval) => Op = ch;
+   public char Op { get; private set; }
+   public override string ToString () => $"op:{Op}:{Priority}";
+   public override int Priority => 5 + mEval.BasePriority;
+
+   public double Evaluate (double a = 0) {
+      return Op switch {
+         '-' => -a,
+         '+' => a,
+         _ => throw new EvalException ($"Unknown unary operator: {Op}"),
+      };
    }
 }
 

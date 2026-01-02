@@ -15,7 +15,9 @@ class Tokenizer {
             case ' ' or '\t': continue;
             case (>= '0' and <= '9') or '.': return GetNumber ();
             case '(' or ')': return new TPunctuation (ch);
-            case '+' or '-' or '*' or '/' or '^' or '=': return new TOpArithmetic (mEval, ch);
+            case '*' or '/' or '^' or '=': return new TOpArithmetic (mEval, ch);
+            case '+' or '-': return mEval.GetPrevToken is not TLiteral or TVariable ? new TOpUnary (mEval, ch)
+                                                                                    : new TOpArithmetic (mEval, ch);
             case >= 'a' and <= 'z': return GetIdentifier ();
             default: return new TError ($"Unknown symbol: {ch}");
          }
@@ -32,7 +34,7 @@ class Tokenizer {
       }
       string sub = mText[start..mN];
       if (mFuncs.Contains (sub)) return new TOpFunction (mEval, sub);
-      else return new TVariable (mEval, sub);
+      return new TVariable (mEval, sub);
    }
    readonly string[] mFuncs = { "sin", "cos", "tan", "sqrt", "log", "exp", "asin", "acos", "atan" };
 
