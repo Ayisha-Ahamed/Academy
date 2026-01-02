@@ -77,21 +77,15 @@ class Evaluator {
       else throw new NotImplementedException ();
    }
 
-   // Returns true if the previous operator has a higher priority than current operator
-   bool OkToPush (TOperator op) {
-      if (mOperators.Count == 0) return true;
-      TOperator prev = mOperators.Peek ();
-      return op.Priority > prev.Priority;
-   }
-
    // Updates operators and operands in the expression to the stack
    void Process (Token token) {
       switch (token) {
-         case TNumber lit:
+         case TLiteral lit:
             mOperands.Push (lit.Value); return;
          case TOperator op:
             // Apply operator if the previous operand has a higher priority
-            while (!OkToPush (op)) ApplyOperator ();
+            while (mOperators.Count > 0 && mOperators.Peek ().Priority > op.Priority)
+               ApplyOperator ();
             mOperators.Push (op); return;
          case TPunctuation p:
             // Increase priority for expressions within braces
