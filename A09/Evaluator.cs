@@ -1,68 +1,110 @@
-﻿namespace A09;
+﻿// ------------------------------------------------------------------------------------------------
+// Training ~ A training program for new joinees at Metamation, Batch- July 2025.
+// Copyright (c) Metamation India.
+// ------------------------------------------------------------------
+// Evaluator.cs
+// Program evaluates tokens from tokenizer and returns the final result.
+// ------------------------------------------------------------------------------------------------
+namespace A09;
 
-class EvalException : Exception {
-   public EvalException (string message) : base (message) { }
+#region Eval Expression ---------------------------------------------------------------------------
+class EvalException (string message) : Exception (message) {
 }
+#endregion
 
+#region class Evaluator ---------------------------------------------------------------------------
 class Evaluator {
-   public double Evaluate (string text) {
-      List<Token> tokens = new ();
-      var tokenizer = new Tokenizer (this, text);
+   #region Properties -----------------------------------------------------------------------------
+   /// <summary>Gets previous token evaluated in Evaluator</summary>
+   public Token? GetPrevToken { get; private set; }
+
+   public int BasePriority = 0; // Stores the base priority of operand under evaluation
+
+   #endregion
+
+   #region Methods --------------------------------------------------
+   /// <summary>Returns the result obtained after evaluation of expression</summary>
+   public double Evaluate (string input) {
+      var tokenizer = new Tokenizer (this, input);
+      mOperators.Clear ();
+      mOperands.Clear ();
+      BasePriority = 0;
+      List<Token> tokens = [];
       for (; ; ) {
-         var token = tokenizer.Next ();
+         var token = tokenizer.GetNext ();
+         GetPrevToken = token;
          if (token is TEnd) break;
          if (token is TError err) throw new EvalException (err.Message);
          tokens.Add (token);
       }
-
-      // Check if this is a variable assignment
-      TVariable? tVariable = null;
-      if (tokens.Count > 2 && tokens[0] is TVariable tvar && tokens[1] is TOpArithmetic { Op: '=' }) {
-         tVariable = tvar;
+      // Evaluate variable assignments
+      TVariable? tVar = null;
+      if (tokens.Count > 1 && tokens[0] is TVariable tv && tokens[1] is TOpBinary bin && bin.Op == '=') {
+         tVar = tv;
          tokens.RemoveRange (0, 2);
       }
-      foreach (var t in tokens) Process (t);
+      foreach (var token in tokens) Process (token);
       while (mOperators.Count > 0) ApplyOperator ();
+      if (BasePriority != 0) throw new Exception ("Mismatched parenthesis");
+      if (mOperators.Count > 0) throw new EvalException ("Too many operators");
+      if (mOperands.Count > 1) throw new EvalException ("Too many operands");
       double f = mOperands.Pop ();
-      if (tVariable != null) mVars[tVariable.Name] = f;
-      return f; 
+      if (tVar != null)
+         mVariables[tVar.Name] = f; // Update dictionary to store user assigned variable
+      return f;
    }
 
-   public int BasePriority { get; private set; }
-
+   /// <summary>Returns value associated with user assigned variable</summary>
    public double GetVariable (string name) {
-      if (mVars.TryGetValue (name, out double f)) return f;
-      throw new EvalException ($"Unknown variable: {name}");
+      if (mVariables.TryGetValue (name, out var f)) return f;
+      throw new EvalException ($"Unknown variable '{name}'");
    }
-   readonly Dictionary<string, double> mVars = new ();
+   #endregion
 
-   void Process (Token token) {
-      switch (token) {
-         case TNumber num: 
-            mOperands.Push (num.Value); 
-            break;
-         case TOperator op:
-            while (mOperators.Count > 0 && mOperators.Peek ().Priority > op.Priority)
-               ApplyOperator ();
-            mOperators.Push (op);
-            break;
-         case TPunctuation p:
-            BasePriority += p.Punct == '(' ? 10 : -10;
-            break;
-         default:
-            throw new EvalException ($"Unknown token: {token}");
-      }
-   }
-   readonly Stack<double> mOperands = new ();
-   readonly Stack<TOperator> mOperators = new ();
-
+   #region Implementation -------------------------------------------
+   // Applies operators in operator stack to the values stores in operand stack
+   // Updates operands stack with evaluated result
    void ApplyOperator () {
       var op = mOperators.Pop ();
-      var f1 = mOperands.Pop ();
-      if (op is TOpFunction func) mOperands.Push (func.Evaluate (f1));
-      else if (op is TOpArithmetic arith) {
-         var f2 = mOperands.Pop ();
-         mOperands.Push (arith.Evaluate (f2, f1));
+      if (mOperands.Count < 1) throw new EvalException ("Operation requires atleast one operand");
+      double f = mOperands.Pop ();
+      if (op is TOpBinary bin) {
+         if (mOperands.Count < 1) throw new EvalException ("Operation requires two operands");
+         double f2 = mOperands.Pop ();
+         mOperands.Push (bin.Apply (f2, f));
+      } else if (op is TOpFunction func) mOperands.Push (func.Apply (f));
+      else if (op is TOpUnary unary) mOperands.Push (unary.Apply (f));
+      else throw new NotImplementedException ();
+   }
+
+   // Returns true if the previous operator has a higher priority than current operator
+   bool OkToPush (TOperator op) {
+      if (mOperators.Count == 0) return true;
+      TOperator prev = mOperators.Peek ();
+      return op.Priority > prev.Priority;
+   }
+
+   // Updates operators and operands in the expression to the stack
+   void Process (Token token) {
+      switch (token) {
+         case TNumber lit:
+            mOperands.Push (lit.Value); return;
+         case TOperator op:
+            // Apply operator if the previous operand has a higher priority
+            while (!OkToPush (op)) ApplyOperator ();
+            mOperators.Push (op); return;
+         case TPunctuation p:
+            // Increase priority for expressions within braces
+            BasePriority += p.Punct == '(' ? 10 : -10; return;
+         default: throw new NotImplementedException ();
       }
    }
+   #endregion
+
+   #region Private Data ---------------------------------------------
+   Stack<double> mOperands = new ();
+   Stack<TOperator> mOperators = new ();
+   Dictionary<string, double> mVariables = []; // Stores the user assigned variables
+   #endregion
 }
+#endregion

@@ -1,89 +1,146 @@
-﻿namespace A09;
+﻿// ------------------------------------------------------------------------------------------------
+// Training ~ A training program for new joinees at Metamation, Batch- July 2025.
+// Copyright (c) Metamation India.
+// ------------------------------------------------------------------
+// Token.cs
+// ------------------------------------------------------------------------------------------------
+namespace A09;
 
-abstract class Token {
+#region class Token -------------------------------------------------------------------------------
+// Base class for tokenizing expression components
+class Token { }
+#endregion
+
+#region class TNumber -----------------------------------------------------------------------------
+// Structure to store numeric data
+class TNumber : Token {
+   public virtual double Value { get; }
 }
+#endregion
 
-abstract class TNumber : Token {
-   public abstract double Value { get; }
-}
-
-class TLiteral : TNumber {
-   public TLiteral (double f) => mValue = f;
+#region class TLiteral ----------------------------------------------------------------------------
+// Represents literal values (eg: 2, 3.45)
+class TLiteral (double f) : TNumber {
+   public override string ToString () => $"Literal: {Value}";
    public override double Value => mValue;
-   public override string ToString () => $"literal:{Value}";
-   readonly double mValue;
+   readonly double mValue = f;
 }
+#endregion
 
-class TVariable : TNumber {
-   public TVariable (Evaluator eval, string name) => (Name, mEval) = (name, eval);
-   public string Name { get; private set; }
+#region class TVariable ---------------------------------------------------------------------------
+// Represents user assigned variables
+class TVariable (Evaluator eval, string name) : TNumber {
+   public override string ToString () => $"Variable: {Name}";
    public override double Value => mEval.GetVariable (Name);
-   public override string ToString () => $"var:{Name}";
-   readonly Evaluator mEval;
+   public string Name => mName;
+   readonly string mName = name;
+   readonly Evaluator mEval = eval;
 }
+#endregion
 
-abstract class TOperator : Token {
-   protected TOperator (Evaluator eval) => mEval = eval;
+#region class TOperator ---------------------------------------------------------------------------
+// Structure represents operators to be applied on operands
+abstract class TOperator (Evaluator eval) : Token {
    public abstract int Priority { get; }
-   readonly protected Evaluator mEval;
+   readonly public Evaluator mEval = eval;
 }
+#endregion
 
-class TOpArithmetic : TOperator {
-   public TOpArithmetic (Evaluator eval, char ch) : base (eval) => Op = ch;
-   public char Op { get; private set; }
-   public override string ToString () => $"op:{Op}:{Priority}";
-   public override int Priority => sPriority[Op] + mEval.BasePriority;
-   static Dictionary<char, int> sPriority = new () {
-      ['+'] = 1, ['-'] = 1, ['*'] = 2, ['/'] = 2, ['^'] = 3, ['='] = 4,
-   };
+#region class TOpBinary ---------------------------------------------------------------------------
+// Represents binary operators for arithmetic operations (requires two operands)
+class TOpBinary (Evaluator eval, char op) : TOperator (eval) {
+   public override string ToString () => $"Operator: {Op}";
 
-   public double Evaluate (double a, double b) {
-      return Op switch {
-         '+' => a + b, '-' => a - b, 
-         '*' => a * b, '/' => a / b,
-         '^' => Math.Pow (a, b),
-         _ => throw new EvalException ($"Unknown operator: {Op}"),
+   public override int Priority
+      => Op switch {
+         '+' or '-' => 1,
+         '*' or '/' => 2,
+         '^' => 3,
+         _ => throw new NotImplementedException (),
       };
-   }
-}
 
-class TOpFunction : TOperator {
-   public TOpFunction (Evaluator eval, string name) : base (eval) => Func = name;
-   public string Func { get; private set; }
-   public override string ToString () => $"func:{Func}:{Priority}";
+   public double Apply (double a, double b)
+      => Op switch {
+         '+' => a + b,
+         '-' => a - b,
+         '*' => a * b,
+         '/' => b / a,
+         '^' => Math.Pow (a, b),
+         _ => throw new NotImplementedException (),
+      };
+
+   public char Op => mOp;
+   readonly char mOp = op;
+}
+#endregion
+
+#region class TOpFunction -------------------------------------------------------------------------
+// Represents unary function in expression string
+class TOpFunction (Evaluator eval, string func) : TOperator (eval) {
+   public override string ToString () => $"Function: {Func}";
+
    public override int Priority => 4 + mEval.BasePriority;
 
-   public double Evaluate (double f) {
-      return Func switch {
-         "sin" => Math.Sin (D2R (f)), 
-         "cos" => Math.Cos (D2R (f)),
-         "tan" => Math.Tan (D2R (f)),
-         "sqrt" => Math.Sqrt (f),
-         "log" => Math.Log (f),
-         "exp" => Math.Exp (f),
-         "asin" => R2D (Math.Asin (f)),
-         "acos" => R2D (Math.Acos (f)),
-         "atan" => R2D (Math.Atan (f)),
-         _ => throw new EvalException ($"Unknown function: {Func}")
+   public double Apply (double a)
+      => Func switch {
+         "sin" => Math.Sin (D2R (a)),
+         "cos" => Math.Cos (D2R (a)),
+         "tan" => Math.Tan (D2R (a)),
+         "sqrt" => Math.Sqrt (a),
+         "log" => Math.Log (a),
+         "exp" => Math.Exp (a),
+         "asin" => R2D (Math.Asin (a)),
+         "acos" => R2D (Math.Acos (a)),
+         "atan" => R2D (Math.Atan (a)),
+         _ => throw new NotImplementedException (),
       };
+   // Converts degree to radians
+   double D2R (double f) => f * Math.PI / 180;
+   // Converts radians to degree
+   double R2D (double f) => f * 180 / Math.PI;
 
-      double D2R (double f) => f * Math.PI / 180;
-      double R2D (double f) => f * 180 / Math.PI;
+   public string Func => mFunc;
+   readonly string mFunc = func;
+}
+#endregion
+
+#region class TOpUnary ----------------------------------------------------------------------------
+// Represents unary operation (unary plus, unary minus)
+class TOpUnary (Evaluator eval, char op) : TOperator (eval) {
+   public override string ToString () => $"op:{Op}:{Priority}";
+   public override int Priority => 5 + mEval.BasePriority;
+
+   public double Apply (double a = 0) {
+      return Op switch {
+         '-' => -a,
+         '+' => a,
+         _ => throw new EvalException ($"Unknown unary operator: {Op}"),
+      };
    }
+   public char Op => mOp;
+   readonly char mOp = op;
 }
+#endregion
 
-class TPunctuation : Token {
-   public TPunctuation (char ch) => Punct = ch;
-   public char Punct { get; private set; }
-   public override string ToString () => $"punct:{Punct}";
+#region class TPunctuation ------------------------------------------------------------------------
+// Represents braces ['(' and ')'] in expression evaluation
+class TPunctuation (char punct) : Token {
+   public override string ToString () => $"Punctuation: {mPunct}";
+   public char Punct => mPunct;
+   readonly char mPunct = punct;
 }
+#endregion
 
-class TEnd : Token {
-   public override string ToString () => "end";
-}
+#region class TEnd --------------------------------------------------------------------------------
+// Represents the end of the expression
+class TEnd : Token { }
+#endregion
 
-class TError : Token {
-   public TError (string message) => Message = message;
-   public string Message { get; private set; }
-   public override string ToString () => $"error:{Message}";
+#region class TError ------------------------------------------------------------------------------
+// Represents an error in parsing expression
+class TError (string message) : Token {
+   public override string ToString () => $"Error: {Message}";
+   public string Message => mMessage;
+   readonly string mMessage = message;
 }
+#endregion
