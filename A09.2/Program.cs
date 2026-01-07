@@ -13,19 +13,13 @@ namespace A09._2;
 class Program {
    static void Main () {
       var queue = new TQueue<int> ();
-      for (int i = 1; i < 5; i++) {
-         queue.Enqueue (i);
-         WriteLine ($"Added : {i}");
+      Random r = new ();
+      int count = 0;
+      for (int i = 1; i <= 100; i++) {
+         if (r.NextDouble () < 0.5 && !queue.IsEmpty) Write ($"{queue.Dequeue ()} ");
+         else queue.Enqueue (++count);
       }
-      WriteLine ($"Capacity is : {queue.Capacity}");
-      for (int i = 1; i < 4; i++) WriteLine ($"Removed : {queue.Dequeue ()}");
-      for (int i = 1; i < 4; i++) {
-         queue.Enqueue (i);
-         WriteLine ($"Added : {i}");
-      }
-      WriteLine ($"Capacity is : {queue.Capacity}");
-      WriteLine ($"The first element in queue is {queue.Peek ()}");
-      for (int i = 1; i < 5; i++) WriteLine ($"Removed : {queue.Dequeue ()}");
+      Write ($"\nCapacity of queue is: {queue.Capacity}");
    }
 }
 #endregion
@@ -34,6 +28,7 @@ class Program {
 class TQueue<T> {
 
    #region Constructors ---------------------------------------------
+   /// <summary>Initialize array structure with capacity to hold two objects</summary>
    public TQueue () {
       mData = new T[2];
       mStart = 0;
@@ -43,15 +38,15 @@ class TQueue<T> {
    #endregion
 
    #region Properties -----------------------------------------------
-   ///<summary>Returns if the queue is empty</summary>
+   /// <summary>Returns if the queue is empty</summary>
    public bool IsEmpty => mCount == 0;
 
-   ///<summary>Gets the number of elements the structure can store without resizing</summary>
+   /// <summary>Gets the number of elements the structure can store without resizing</summary>
    public int Capacity => mCapacity;
    #endregion
 
    #region Methods --------------------------------------------------
-   ///<summary>Removes and returns first element from queue</summary>
+   /// <summary>Removes and returns first element from queue</summary>
    public T Dequeue () {
       // Check whether the list is empty
       if (IsEmpty) throw new InvalidOperationException ("Queue is empty");
@@ -61,17 +56,17 @@ class TQueue<T> {
       return first;
    }
 
-   ///<summary>Adds element to the beginning of the queue</summary>
+   /// <summary>Adds element to the beginning of the queue</summary>
    public void Enqueue (T a) {
-      // Check whether the circular buffer is full
-      if (!IsEmpty && mStart == mNext) Resize ();
+      // Resize if the circular buffer is full
+      if (mCount == mCapacity) Resize ();
       // Add new element to the next empty space in the array
       mData[mNext] = a;
       mNext = (mNext + 1) % mCapacity;
       mCount++;
    }
 
-   ///<summary>Returns the element at the beginning of the queue</summary>
+   /// <summary>Returns the element at the beginning of the queue</summary>
    public T Peek () {
       if (IsEmpty) throw new InvalidOperationException ("Queue is empty");
       return mData[mStart];
@@ -79,14 +74,16 @@ class TQueue<T> {
    #endregion
 
    #region Implementation -------------------------------------------
-   // Resizes mData to allow enqueue operation past current array size
+   // Resize array to add more objects to the queue
    void Resize () {
-      int index = 0, len = mCapacity;
-      var temp = new T[len * 2]; // Resize array
+      int index = 0, len = mCapacity, count = mCount;
+      var temp = new T[len * 2];
       // Copy existing elements to the new array
-      for (int i = mStart; i < len; i++) temp[index++] = mData[i];
-      if (mNext <= mStart) for (int j = 0; j < mNext; j++)
-            temp[index++] = mData[j];
+      while (count > 0) {
+         temp[index++] = mData[mStart];
+         mStart = (mStart + 1) % mCapacity;
+         count--;
+      }
       // Update data to represent newly allocated array
       mData = temp;
       mStart = 0;
@@ -95,11 +92,11 @@ class TQueue<T> {
    #endregion
 
    #region Private Data ---------------------------------------------
+   int mCapacity => mData.Length; // Returns the capacity of the array
+   int mCount; // Number of objects stored in the queue
    T[] mData;  // Array structure to store queue elements
-   int mStart; // Points to the first element of the queue
    int mNext;  // Points to next empty space to be used
-   int mCount; // Stores the count of elements currently stored in the queue
-   int mCapacity => mData.Length; // Holds the capacity of the array
+   int mStart; // Points to the first element of the queue
    #endregion
 }
 #endregion
