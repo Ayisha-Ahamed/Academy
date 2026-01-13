@@ -32,7 +32,10 @@ class Tokenizer (Evaluator eval, string input) {
    #region Implementation -------------------------------------------
    TLiteral GetLiteral () {
       int start = mN - 1;
-      while (mN < mText.Length && mText[mN++] is >= '0' and <= '9');
+      if (mN < mText.Length) {
+         while (mN < mText.Length && mText[mN++] is (>= '0' and <= '9')) ;
+         mN--;
+      }
       string number = mText[start..mN];
       double f = double.Parse (number);
       return new TLiteral (f);

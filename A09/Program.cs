@@ -20,7 +20,7 @@ class Program {
          if (input == "exit") break;
          try {
             double result = eval.Evaluate (input);
-            ForegroundColor = ConsoleColor.Green;
+            ForegroundColor = ConsoleColor.Blue;
             WriteLine (result);
             ResetColor ();
          } catch (Exception e) {
