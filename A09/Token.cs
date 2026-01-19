@@ -57,20 +57,21 @@ class TOpBinary (Evaluator eval, char op) : TOperator (eval) {
          '*' or '/' => 2,
          '^' => 3,
          _ => throw new NotImplementedException (),
-      };
+      } + mBasePriority;
 
    public double Apply (double a, double b)
       => Op switch {
          '+' => a + b,
          '-' => a - b,
          '*' => a * b,
-         '/' => b / a,
+         '/' => a / b,
          '^' => Math.Pow (a, b),
          _ => throw new NotImplementedException (),
       };
 
    public char Op => mOp;
    readonly char mOp = op;
+   readonly int mBasePriority = eval.BasePriority;
 }
 #endregion
 
@@ -79,7 +80,7 @@ class TOpBinary (Evaluator eval, char op) : TOperator (eval) {
 class TOpFunction (Evaluator eval, string func) : TOperator (eval) {
    public override string ToString () => $"Function: {Func}";
 
-   public override int Priority => 4 + mEval.BasePriority;
+   public override int Priority => 4 + mBasePriority;
 
    public double Apply (double a)
       => Func switch {
@@ -101,6 +102,7 @@ class TOpFunction (Evaluator eval, string func) : TOperator (eval) {
 
    public string Func => mFunc;
    readonly string mFunc = func;
+   readonly int mBasePriority = eval.BasePriority;
 }
 #endregion
 
@@ -108,7 +110,7 @@ class TOpFunction (Evaluator eval, string func) : TOperator (eval) {
 // Represents unary operation (unary plus, unary minus)
 class TOpUnary (Evaluator eval, char op) : TOperator (eval) {
    public override string ToString () => $"op:{Op}:{Priority}";
-   public override int Priority => 5 + mEval.BasePriority;
+   public override int Priority => 5 + mBasePriority;
 
    public double Apply (double a = 0) {
       return Op switch {
@@ -119,6 +121,7 @@ class TOpUnary (Evaluator eval, char op) : TOperator (eval) {
    }
    public char Op => mOp;
    readonly char mOp = op;
+   readonly int mBasePriority = eval.BasePriority;
 }
 #endregion
 

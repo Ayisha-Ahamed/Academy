@@ -5,6 +5,8 @@
 // Tokenizer.cs
 // Program splits expression into tokens for evaluation.
 // ------------------------------------------------------------------------------------------------
+using System.Globalization;
+
 namespace A09;
 
 #region class Tokenizer ---------------------------------------------------------------------------
@@ -19,8 +21,8 @@ class Tokenizer (Evaluator eval, string input) {
             case ' ': break;
             case >= '0' and <= '9': return GetLiteral ();
             case '(' or ')': return new TPunctuation (ch);
-            case '+' or '-': return mEval.GetPrevToken is not (TLiteral or TVariable) ? new TOpUnary(mEval,ch) 
-                                                                                      : new TOpBinary (mEval,ch);
+            case '+' or '-': return mEval.GetPrevToken is not (TLiteral or TVariable) ? new TOpUnary (mEval, ch)
+                                                                                      : new TOpBinary (mEval, ch);
             case >= 'a' and <= 'z': return GetIdentifier ();
             default: return new TError ($"Unexpected character {ch}");
          }
@@ -32,10 +34,8 @@ class Tokenizer (Evaluator eval, string input) {
    #region Implementation -------------------------------------------
    TLiteral GetLiteral () {
       int start = mN - 1;
-      if (mN < mText.Length) {
-         while (mN < mText.Length && mText[mN++] is (>= '0' and <= '9')) ;
-         mN--;
-      }
+      while (mN < mText.Length && mText[mN++] is (>= '0' and <= '9')) ;
+      if (mN < mText.Length) mN--;
       string number = mText[start..mN];
       double f = double.Parse (number);
       return new TLiteral (f);
@@ -47,12 +47,12 @@ class Tokenizer (Evaluator eval, string input) {
          char ch = mText[mN++];
          if (ch is >= '0' and <= '9' or >= 'a' and <= 'z')
             continue;
-         mN--; 
+         mN--;
          break;
       }
       string identifier = mText[start..mN];
       // If the method is defined in mFunc return token TOpFunction
-      if (mFunc.Contains (identifier)) return new TOpFunction (mEval,identifier);
+      if (mFunc.Contains (identifier)) return new TOpFunction (mEval, identifier);
       return new TVariable (mEval, identifier);
    }
    readonly string[] mFunc = ["sin", "cos", "tan", "asin", "acos", "atan", "log", "exp", "sqrt"];

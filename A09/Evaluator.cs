@@ -35,9 +35,13 @@ class Evaluator {
          var token = tokenizer.GetNext ();
          GetPrevToken = token;
          if (token is TEnd) break;
-         if (token is TError err) throw new EvalException (err.Message);
-         tokens.Add (token);
+         switch (token) {
+            case TPunctuation punct: BasePriority += punct.Punct == '(' ? 10 : -10; break;
+            case TError err: throw new EvalException (err.Message);
+            default: tokens.Add (token); break;
+         }
       }
+      if (BasePriority != 0) throw new Exception ("Mismatched parenthesis");
       // Evaluate variable assignments
       TVariable? tVar = null;
       if (tokens.Count > 1 && tokens[0] is TVariable tv && tokens[1] is TOpBinary bin && bin.Op == '=') {
@@ -46,7 +50,6 @@ class Evaluator {
       }
       foreach (var token in tokens) Process (token);
       while (mOperators.Count > 0) ApplyOperator ();
-      if (BasePriority != 0) throw new Exception ("Mismatched parenthesis");
       if (mOperators.Count > 0) throw new EvalException ("Too many operators");
       if (mOperands.Count > 1) throw new EvalException ("Too many operands");
       double f = mOperands.Pop ();
@@ -78,19 +81,16 @@ class Evaluator {
       else throw new NotImplementedException ();
    }
 
-   // Updates operators and operands in the expression to the stack
+   // Updates operators and operands to the stack
    void Process (Token token) {
       switch (token) {
-         case TLiteral lit:
-            mOperands.Push (lit.Value); return;
+         case TNumber num:
+            mOperands.Push (num.Value); return;
          case TOperator op:
             // Apply operator if the previous operand has a higher priority
             while (mOperators.Count > 0 && mOperators.Peek ().Priority > op.Priority)
                ApplyOperator ();
             mOperators.Push (op); return;
-         case TPunctuation p:
-            // Increase priority for expressions within braces
-            BasePriority += p.Punct == '(' ? 10 : -10; return;
          default: throw new NotImplementedException ();
       }
    }
