@@ -21,8 +21,9 @@ class Tokenizer (Evaluator eval, string input) {
             case ' ': break;
             case >= '0' and <= '9': return GetLiteral ();
             case '(' or ')': return new TPunctuation (ch);
-            case '+' or '-': return mEval.GetPrevToken is not (TLiteral or TVariable) ? new TOpUnary (mEval, ch)
-                                                                                      : new TOpBinary (mEval, ch);
+            case '+' or '-':
+               return mEval.GetPrevToken is not (TLiteral or TVariable or TPunctuation) ? new TOpUnary (mEval, ch)
+                                                                                        : new TOpBinary (mEval, ch);
             case >= 'a' and <= 'z': return GetIdentifier ();
             default: return new TError ($"Unexpected character {ch}");
          }
@@ -34,8 +35,12 @@ class Tokenizer (Evaluator eval, string input) {
    #region Implementation -------------------------------------------
    TLiteral GetLiteral () {
       int start = mN - 1;
-      while (mN < mText.Length && mText[mN++] is (>= '0' and <= '9')) ;
-      if (mN < mText.Length) mN--;
+      while (mN < mText.Length) {
+         char ch = mText[mN++];
+         if (ch is >= '0' and <= '9') continue;
+         mN--;
+         break;
+      }
       string number = mText[start..mN];
       double f = double.Parse (number);
       return new TLiteral (f);
@@ -45,8 +50,7 @@ class Tokenizer (Evaluator eval, string input) {
       int start = mN - 1;
       while (mN < mText.Length) {
          char ch = mText[mN++];
-         if (ch is >= '0' and <= '9' or >= 'a' and <= 'z')
-            continue;
+         if (ch is >= '0' and <= '9' or >= 'a' and <= 'z') continue;
          mN--;
          break;
       }

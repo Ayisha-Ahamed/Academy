@@ -21,7 +21,6 @@ class TNumber : Token {
 #region class TLiteral ----------------------------------------------------------------------------
 // Represents literal values (eg: 2, 3.45)
 class TLiteral (double f) : TNumber {
-   public override string ToString () => $"Literal: {Value}";
    public override double Value => mValue;
    readonly double mValue = f;
 }
@@ -30,7 +29,6 @@ class TLiteral (double f) : TNumber {
 #region class TVariable ---------------------------------------------------------------------------
 // Represents user assigned variables
 class TVariable (Evaluator eval, string name) : TNumber {
-   public override string ToString () => $"Variable: {Name}";
    public override double Value => mEval.GetVariable (Name);
    public string Name => mName;
    readonly string mName = name;
@@ -49,8 +47,8 @@ abstract class TOperator (Evaluator eval) : Token {
 #region class TOpBinary ---------------------------------------------------------------------------
 // Represents binary operators for arithmetic operations (requires two operands)
 class TOpBinary (Evaluator eval, char op) : TOperator (eval) {
-   public override string ToString () => $"Operator: {Op}";
-
+   #region Properties -----------------------------------------------
+   public char Op => mOp;
    public override int Priority
       => Op switch {
          '+' or '-' => 1,
@@ -58,7 +56,9 @@ class TOpBinary (Evaluator eval, char op) : TOperator (eval) {
          '^' => 3,
          _ => throw new NotImplementedException (),
       } + mBasePriority;
+   #endregion
 
+   #region Helper Methods -------------------------------------------
    public double Apply (double a, double b)
       => Op switch {
          '+' => a + b,
@@ -68,20 +68,24 @@ class TOpBinary (Evaluator eval, char op) : TOperator (eval) {
          '^' => Math.Pow (a, b),
          _ => throw new NotImplementedException (),
       };
+   #endregion
 
-   public char Op => mOp;
+   #region Private Data ---------------------------------------------
    readonly char mOp = op;
    readonly int mBasePriority = eval.BasePriority;
+   #endregion
 }
 #endregion
 
 #region class TOpFunction -------------------------------------------------------------------------
 // Represents unary function in expression string
 class TOpFunction (Evaluator eval, string func) : TOperator (eval) {
-   public override string ToString () => $"Function: {Func}";
-
+   #region Properties -----------------------------------------------
+   public string Func => mFunc;
    public override int Priority => 4 + mBasePriority;
+   #endregion
 
+   #region Helper Methods -------------------------------------------
    public double Apply (double a)
       => Func switch {
          "sin" => Math.Sin (D2R (a)),
@@ -95,23 +99,31 @@ class TOpFunction (Evaluator eval, string func) : TOperator (eval) {
          "atan" => R2D (Math.Atan (a)),
          _ => throw new NotImplementedException (),
       };
+   #endregion
+
+   #region Implementation -------------------------------------------
    // Converts degree to radians
    double D2R (double f) => f * Math.PI / 180;
    // Converts radians to degree
    double R2D (double f) => f * 180 / Math.PI;
+   #endregion
 
-   public string Func => mFunc;
+   #region Private Data ---------------------------------------------
    readonly string mFunc = func;
    readonly int mBasePriority = eval.BasePriority;
+   #endregion
 }
 #endregion
 
 #region class TOpUnary ----------------------------------------------------------------------------
 // Represents unary operation (unary plus, unary minus)
 class TOpUnary (Evaluator eval, char op) : TOperator (eval) {
-   public override string ToString () => $"op:{Op}:{Priority}";
+   #region Properties -----------------------------------------------
    public override int Priority => 5 + mBasePriority;
+   public char Op => mOp;
+   #endregion
 
+   #region Helper Methods -------------------------------------------
    public double Apply (double a = 0) {
       return Op switch {
          '-' => -a,
@@ -119,16 +131,18 @@ class TOpUnary (Evaluator eval, char op) : TOperator (eval) {
          _ => throw new EvalException ($"Unknown unary operator: {Op}"),
       };
    }
-   public char Op => mOp;
+   #endregion
+
+   #region Private Data ---------------------------------------------
    readonly char mOp = op;
    readonly int mBasePriority = eval.BasePriority;
+   #endregion
 }
 #endregion
 
 #region class TPunctuation ------------------------------------------------------------------------
 // Represents braces ['(' and ')'] in expression evaluation
 class TPunctuation (char punct) : Token {
-   public override string ToString () => $"Punctuation: {mPunct}";
    public char Punct => mPunct;
    readonly char mPunct = punct;
 }
