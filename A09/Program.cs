@@ -34,6 +34,8 @@ class Program {
    public static void TestEvaluator () {
       Dictionary<string, double> test = new Dictionary<string, double> {
          { "1", 1 },
+         { "----1", 1 },
+         { "--+-1", -1 },
          { "a = 51", 51 },
          { "(5)", 5 },
          { "a / 10", 5.1 },
@@ -42,6 +44,7 @@ class Program {
          { "8 * (5 + 30)", 280 },
          { "(8* (5 - 30)) / -200", 1 },
          { "((5 * 9) + 6) * 98", 4998 },
+         { "(6 + (5 * 9)) * 98", 4998 },
          { "b = ((9 + 5) * 56)", 784 },
          { "b = b / 56", 14 },
          { "c = -b", -14 },

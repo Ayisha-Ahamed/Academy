@@ -142,7 +142,7 @@ class TOpUnary (Evaluator eval, char op) : TOperator (eval) {
 
 #region class TPunctuation ------------------------------------------------------------------------
 // Represents braces ['(' and ')'] in expression evaluation
-class TPunctuation (char punct) : Token {
+class TParenthesis (char punct) : Token {
    public char Punct => mPunct;
    readonly char mPunct = punct;
 }

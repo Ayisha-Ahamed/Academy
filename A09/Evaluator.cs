@@ -36,7 +36,7 @@ class Evaluator {
          GetPrevToken = token;
          if (token is TEnd) break;
          switch (token) {
-            case TPunctuation punct: BasePriority += punct.Punct == '(' ? 10 : -10; break;
+            case TParenthesis p: BasePriority += p.Punct == '(' ? 10 : -10; break;
             case TError err: throw new EvalException (err.Message);
             default: tokens.Add (token); break;
          }

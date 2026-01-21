@@ -20,10 +20,10 @@ class Tokenizer (Evaluator eval, string input) {
             case '*' or '^' or '/' or '=': return new TOpBinary (mEval, ch);
             case ' ': break;
             case >= '0' and <= '9': return GetLiteral ();
-            case '(' or ')': return new TPunctuation (ch);
+            case '(' or ')': return new TParenthesis (ch);
             case '+' or '-':
-               return mEval.GetPrevToken is not (TLiteral or TVariable or TPunctuation) ? new TOpUnary (mEval, ch)
-                                                                                        : new TOpBinary (mEval, ch);
+               return mEval.GetPrevToken is TLiteral or TVariable or TParenthesis ? new TOpBinary (mEval, ch)
+                                                                                  : new TOpUnary (mEval, ch);
             case >= 'a' and <= 'z': return GetIdentifier ();
             default: return new TError ($"Unexpected character {ch}");
          }
@@ -55,7 +55,6 @@ class Tokenizer (Evaluator eval, string input) {
          break;
       }
       string identifier = mText[start..mN];
-      // If the method is defined in mFunc return token TOpFunction
       if (mFunc.Contains (identifier)) return new TOpFunction (mEval, identifier);
       return new TVariable (mEval, identifier);
    }
