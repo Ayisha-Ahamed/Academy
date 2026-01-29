@@ -23,14 +23,17 @@ class Program {
       }
       // Function to test class Parse
       static void TestParse () {
-         string[] testcase = ["23.","123.45","+123.45","++123.45" ,"123.45e.45", "-123.45e5", "123.45.45",
-         "123.45e-4", "123.45e--4", "123e45e2", "123abc", "e34",".e34","e", ".32", "0.32", "abc23de", "1e", "++","-e","",
-         "1-23","-12-3.45e3","123.-4e4","123.45e3.6","abc","123.g","123e","123+","123-","+-98","12E3","-123.-98",".e-","-e+",
-         "123e4e5","0","2e+","4e-","+", "NaN"];
+         string[] testcase = ["+.23", "23.", "123.45", "+123.45", "++123.45", "123.45e.45", "-123.45e5", "123.45.45",
+            "-12345", "12e4", "123.45e-4", "123.45e--4", "123e45e2", "123abc", "e34",".e34","e", ".32", "0.32",
+            "abc23de", "1e", "++", "-e", "", "1-23", "-12-3.45e3", "123.-4e4", "123.45e3.6", "abc", "123.g", "123e",
+            "123+", "123-", "+-98", "12E3", "-123.-98", ".e-", "-e+", "123e4e5", "0", "2e+", "4e-", "+", "NaN", "naN"];
+         WriteLine ($"  {"Input",-10}  |  {"Expected",-10}  |  {"Actual",-10}  |  Status");
+         WriteLine (new string ('-', 55));
          foreach (var test in testcase) {
             bool isDouble = double.TryParse (test, out double num), isParsed = TryParse (test, out double parsed);
-            Write ($"{test,-10}  |  {num,-10}  |  {parsed,-10}  |  ");
-            PrintResult (isDouble == isParsed && num == parsed ? "Pass" : "Fail");
+            Write ($"  {test,-10}  |  {num,-10}  |  {parsed,-10}  |  ");
+            PrintResult ((isDouble == isParsed && num == parsed) ||
+                         (double.IsNaN (num) && double.IsNaN (parsed)) ? "Pass" : "Fail");
          }
       }
       // Displays test results to the console
@@ -42,97 +45,54 @@ class Program {
       // Returns true if Parse implementation successfully converts input string to double
       static bool TryParse (string input, out double num) {
          num = 0;
-         try { num = new Parse (input).Double; } catch { return false; }
+         try { num = ParseDouble.Parse (input); } catch { return false; }
          return true;
       }
    }
+   #endregion
 }
-#endregion
 
-#region class Parse -------------------------------------------------------------------------------
-class Parse {
-   #region Constructor ----------------------------------------------
-   /// <summary>
-   /// Initialize class with input string. 
-   /// Set the index to be processed to starting position. 
-   /// Convert input string to double and store value in field variable.
-   /// </summary>
-   public Parse (string input) {
-      mInput = input;
-      mIdx = 0;
-      mDouble = GetDouble ();
-   }
-   #endregion
-
-   #region Properties -----------------------------------------------
-   /// <summary>Returns double value converted from input string</summary>
-   public double Double => mDouble;
-   #endregion
-
-   #region Implementation -------------------------------------------
-   // Returns the number converted from the string
-   int GetNum () {
-      int num = 0;
-      while (mIdx < mInput.Length && char.IsDigit (mInput[mIdx]))
-         num = (num * 10) + (mInput[mIdx++] - '0');
-      return num;
-   }
-
-   // Returns signed number converted from string
-   int GetSignedNum () {
-      int sign = mInput[mIdx] is '+' or '-' && mInput[mIdx++] is '-' ? -1 : 1, start = mIdx, num = GetNum();
-      if (mIdx - start == 0) throw new Exception ("Sign operator should be followed by an integer");
-      return sign * num;
-   }
-
-   // Returns double converted from input string
-   double GetDouble () {
+#region class ParseDouble -------------------------------------------------------------------------
+class ParseDouble {
+   #region Methods --------------------------------------------------
+   /// <summary>Returns double converted from input string</summary>
+   public static double Parse (string input) {
+      if (input.ToLower () == "nan") return double.NaN;
       double num = 0; // Get the whole part of the decimal number
-      // Tracks the current state of the double processed
-      EParsed state = EParsed.None;
-      while (mIdx < mInput.Length) {
-         switch (mInput[mIdx], state) {
-            case ('+' or '-' or (>= '0' and <= '9'), EParsed.None):
-               num = GetSignedNum ();
-               state = EParsed.Whole; break;
-            case ('.', EParsed.None or EParsed.Whole):
-               int start = ++mIdx, len;
-               double f = GetNum () * Math.Pow (0.1, len = mIdx - start);
-               if (len == 0 && start != mInput.Length)
-                  throw new Exception ("A decimal point should follow atleast one number");
-               num += num < 0 ? -f : f;
-               // Round number up to converted decimal places
-               num = Math.Round (num, len);
-               state = EParsed.Fraction; break;
-            case ('e' or 'E', EParsed.Whole or EParsed.Fraction):
-               mIdx++;
-               num *= Math.Pow (10, GetSignedNum ());
-               state = EParsed.Exponent; break;
-            default: throw new Exception ("Not a double");
-         }
+      int sign = 1,   // Stores the sign of the number/exponent
+         exp = 0,     // Stores the exponent part
+         dCount = 1,  // Stores the count of decimal numbers
+         i = 0;  // Index position of input string being read
+      EParsed state = EParsed.A; // Tracks the current state of parsing
+      Action todo = () => { }, none = () => { };
+      while (i < input.Length) {
+         char ch = input[i++];
+         (todo, state) = (ch, state) switch {
+            ('+' or '-', EParsed.A or EParsed.F) => (() => { sign = ch == '+' ? 1 : -1; }, ++state),
+            ( >= '0' and <= '9', EParsed.A or EParsed.B or EParsed.C) =>
+                                 (() => { num = (num * 10) + (ch - '0'); }, EParsed.C),
+            ('.', EParsed.A or EParsed.B or EParsed.C) => (none, EParsed.D),
+            ( >= '0' and <= '9', EParsed.D or EParsed.E) =>
+                                 (() => { num += (ch - '0') * Math.Pow (0.1, dCount); dCount++; }, EParsed.E),
+            ('e' or 'E', EParsed.C or EParsed.E) => (() => { num *= sign; sign = 1; }, EParsed.F),
+            ( >= '0' and <= '9', EParsed.F or EParsed.G or EParsed.H) =>
+                                 (() => { exp = (exp * 10) + (ch - '0'); }, EParsed.H),
+            _ => throw new Exception ("Not a double")
+         };
+         todo ();
       }
-      if (state == EParsed.None) throw new Exception ("Input is empty");
-      return num;
+      return state switch {
+         EParsed.C or EParsed.D => num * sign, // Input has only whole part eg: "12", "28."
+         EParsed.E => sign * Math.Round (num, dCount), // Input has decimal part (without exponent) eg: "12.4", "0.8"
+         EParsed.H => Math.Round (num, dCount) * Math.Pow (10, exp * sign), // Input has both decimal and exponent part
+         _ => throw new Exception ("Not a double")
+      };
    }
    #endregion
 
-   #region Private Data ---------------------------------------------
-   readonly string mInput; // Copy of input string
-   int mIdx;          // Stores the index position of input string to be processed
-   double mDouble;    // Stores the number converted from input string
+   #region Nested types ---------------------------------------------
+   // Defines the parsing states used when converting a numeric string into a double
+   enum EParsed { A, B, C, D, E, F, G, H }
    #endregion
-}
-#endregion
-
-#region enum EParsed ------------------------------------------------------------------------------
-/// <summary>Defines the parsing states used when converting a numeric string into a double</summary>
-public enum EParsed {
-   None,
-   // Indicates that digits before decimal point (whole part) have been parsed</summary>
-   Whole,
-   // Indicates that digits after decimal point (fractional part) have been parsed</summary>
-   Fraction,
-   // Indicates that digits following 'e' or 'E' (exponent part) have been parsed</summary>
-   Exponent
 }
 #endregion
