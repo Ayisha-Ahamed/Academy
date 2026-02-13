@@ -38,8 +38,8 @@ class TQueue<T> {
    /// <summary>Initialize an empty queue with default capacity to hold four objects</summary>
    public TQueue () {
       mData = new T[4];
-      mHead = 0;
-      mTail = 0;
+      mTop = 0;
+      mBottom = 0;
       mCount = 0;
    }
    #endregion
@@ -57,8 +57,8 @@ class TQueue<T> {
    /// <summary>Removes and returns object at the head of the queue</summary>
    public T DequeueHead () {
       if (IsEmpty) throw new Exception ("Queue empty");
-      int first = mHead;
-      mHead = (mHead + 1) % mCapacity; // Update pointer to point to the next element
+      int first = mTop;
+      mTop = (mTop + 1) % mCapacity; // Update pointer to point to the next element
       mCount--;
       return mData[first];
    }
@@ -66,8 +66,8 @@ class TQueue<T> {
    /// <summary>Removes and returns object at the end of the queue</summary>
    public T DequeueTail () {
       if (IsEmpty) throw new Exception ("Queue empty");
-      int last = (mTail - 1 + mCapacity) % mCapacity;
-      mTail = last;
+      int last = (mBottom - 1 + mCapacity) % mCapacity;
+      mBottom = last;
       mCount--;
       return mData[last];
    }
@@ -76,17 +76,17 @@ class TQueue<T> {
    public void EnqueueHead (T a) {
       Resize ();
       // Decrement head pointer to update the head of the queue
-      mHead = (mCapacity + mHead - 1) % mCapacity;
-      mData[mHead] = a;
+      mTop = (mCapacity + mTop - 1) % mCapacity;
+      mData[mTop] = a;
       mCount++;
    }
 
    /// <summary>Adds object at the end of the queue</summary>
    public void EnqueueTail (T a) {
       Resize ();
-      mData[mTail] = a;
+      mData[mBottom] = a;
       // Increment tail pointer to point to the next empty space available at the end of the queue
-      mTail = (mTail + 1) % mCapacity;
+      mBottom = (mBottom + 1) % mCapacity;
       mCount++;
    }
    #endregion
@@ -99,13 +99,13 @@ class TQueue<T> {
       int index = 0, len = mCapacity, count = mCount;
       var temp = new T[len * 2];
       while (count > 0) {
-         temp[index++] = mData[mHead];
-         mHead = (mHead + 1) % len;
+         temp[index++] = mData[mTop];
+         mTop = (mTop + 1) % len;
          count--;
       }
       mData = temp;
-      mTail = index;
-      mHead = 0;
+      mBottom = index;
+      mTop = 0;
    }
    #endregion
 
@@ -113,8 +113,8 @@ class TQueue<T> {
    int mCapacity => mData.Length;
    int mCount; // Counts the number of elements in the queue
    T[] mData;  // Array structure to store objects in queue
-   int mHead;  // Points to the first element of the queue
-   int mTail;  // Points to the next empty location at the rear end of the queue
+   int mTop;  // Points to the first element of the queue
+   int mBottom;  // Points to the next empty location at the rear end of the queue
    #endregion
 }
 #endregion
