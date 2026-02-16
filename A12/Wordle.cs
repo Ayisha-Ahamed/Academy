@@ -9,41 +9,46 @@
 using static System.Console;
 
 namespace A12 {
-   #region class Wordle ------------------------------------------------------------------------------
+   #region enum EState ----------------------------------------------------------------------------
+   // Represents the state of the game following user input
+   enum EState { IsInvalid = -1, IsFound, IsAWord, IsNotFound }
+   #endregion
+
+   #region class Wordle ---------------------------------------------------------------------------
    class Wordle {
-      #region Constructors ---------------------------------------------
+      #region Constructors ------------------------------------------
       public Wordle () {
-         string[] Puzzle = [.. File.ReadLines ("puzzle-5.txt")];
+         string[] Puzzle = [.. File.ReadLines ("Data/puzzle-5.txt")];
          Word = Puzzle[new Random ().Next (0, Puzzle.Length)];
          mDisplay = new Display (this, Word);
          Buffer = new char[5];
-         Dictionary = [.. File.ReadAllLines ("dictionary-5.txt")];
+         Dictionary = [.. File.ReadAllLines ("Data/dictionary-5.txt")];
          mDisplay.PrintWindow ();
       }
       #endregion
 
-      #region Properties -----------------------------------------------
+      #region Properties --------------------------------------------
       public int MaxTries = 6;
       public int Tries = 0, Length = 0;
       #endregion
 
-      #region Public Methods -------------------------------------------
+      #region Public Methods ----------------------------------------
       public void Run () {
          while (Tries < 6) {
             Input = GetUserInput ();
-            EState msgId = IsFound (Input) ? EState.IsFound : (IsAWord (Input) ? EState.IsAWord : EState.IsInvalid);
-            if (msgId is not EState.IsInvalid) {
+            EState state = IsFound (Input) ? EState.IsFound : (IsAWord (Input) ? EState.IsAWord : EState.IsInvalid);
+            if (state is not EState.IsInvalid) {
                Tries++; Length = 0;
                mDisplay.PrintWindow ();
             }
-            mDisplay.PrintResult ((int)msgId);
-            if (msgId == EState.IsFound) return;
+            mDisplay.PrintResult (state);
+            if (state == EState.IsFound) return;
          }
-         mDisplay.PrintResult ((int)EState.IsNotFound);
+         mDisplay.PrintResult (EState.IsNotFound);
       }
       #endregion
 
-      #region Implementation -------------------------------------------
+      #region Implementation ----------------------------------------
       string GetUserInput () {
          ConsoleKeyInfo key;
          mDisplay.AlignCursorForInput ();
@@ -73,12 +78,7 @@ namespace A12 {
       bool IsFound (string word) => string.Equals (Word, word, StringComparison.OrdinalIgnoreCase);
       #endregion
 
-      #region Nested Types ---------------------------------------------
-      // Represents the state of the game following user input
-      enum EState { IsInvalid = -1, IsFound, IsAWord, IsNotFound }
-      #endregion
-
-      #region Private Members ------------------------------------------
+      #region Private Members ---------------------------------------
       string Word;
       char[] Buffer;
       public string? Input;

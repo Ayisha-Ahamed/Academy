@@ -44,14 +44,14 @@ namespace A12 {
       }
 
       /// <summary>Print result corresponding to the error state</summary>
-      public void PrintResult (int msgId) {
+      public void PrintResult (EState state) {
          MoveCursorToTop (row: mWordle.MaxTries + 5);
          MoveCursorToCenter (moveLeft: 15);
-         (string msg, ForegroundColor) = msgId switch {
-            -1 => ($"{mWordle.Input,18} is not a word", ConsoleColor.Yellow),
-            0 => ($"{"",8}You found the word in {mWordle.Tries} tries", ConsoleColor.Green),
-            1 => (new string (' ', 50), ConsoleColor.Gray), // Clean-up console print message section
-            2 => ($"{"",10}Sorry! The word was {mWord}", ConsoleColor.Yellow), // Clean-up console print message section
+         (string msg, ForegroundColor) = state switch {
+            EState.IsInvalid => ($"{mWordle.Input,18} is not a word", ConsoleColor.Yellow),
+            EState.IsFound => ($"{"",8}You found the word in {mWordle.Tries} tries", ConsoleColor.Green),
+            EState.IsAWord => (new string (' ', 50), ConsoleColor.Gray), // Clean-up console print message section
+            EState.IsNotFound => ($"{"",10}Sorry! The word was {mWord}", ConsoleColor.Yellow),
             _ => throw new Exception ("Result: Unknown error code")
          };
          WriteLine ($"{msg,15}");
