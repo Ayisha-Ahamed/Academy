@@ -24,7 +24,7 @@ namespace A12 {
 
       #region Properties -----------------------------------------------
       public int MaxTries = 6;
-      public int Tries = 0, LCount = 0;
+      public int Tries = 0, Length = 0;
       #endregion
 
       #region Public Methods -------------------------------------------
@@ -33,7 +33,7 @@ namespace A12 {
             Input = GetUserInput ();
             EState msgId = IsFound (Input) ? EState.IsFound : (IsAWord (Input) ? EState.IsAWord : EState.IsInvalid);
             if (msgId is not EState.IsInvalid) {
-               Tries++; LCount = 0;
+               Tries++; Length = 0;
                mDisplay.PrintWindow ();
             }
             mDisplay.PrintResult ((int)msgId);
@@ -50,20 +50,20 @@ namespace A12 {
          while (true) {
             switch ((key = ReadKey (true)).Key) {
                case >= ConsoleKey.A and <= ConsoleKey.Z:
-                  if (LCount < 5) {
-                     Buffer[LCount] = char.ToUpper (key.KeyChar);
-                     mDisplay.Print (Buffer[LCount]);
-                     LCount++;
+                  if (Length < 5) {
+                     Buffer[Length] = char.ToUpper (key.KeyChar);
+                     mDisplay.Print (Buffer[Length]);
+                     Length++;
                   }
                   break;
                case ConsoleKey.Backspace:
-                  if (LCount > 0) {
+                  if (Length > 0) {
                      mDisplay.UpdateRow ();
-                     LCount--;
+                     Length--;
                   }
                   break;
                case ConsoleKey.Enter:
-                  if (LCount == 5) return new string (Buffer); break;
+                  if (Length == 5) return new string (Buffer); break;
             }
          }
       }

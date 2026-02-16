@@ -16,15 +16,15 @@ namespace A12 {
       /// <summary>Align cursor for next input</summary>
       public void AlignCursorForInput () {
          MoveCursorToTop (mWordle.Tries);
-         CursorLeft = CenterAlign + (mWordle.LCount == 0 ? 0 : GridWidth);
-         if (mWordle.LCount != 5) Write (Mouse);
+         CursorLeft = CenterAlign + (mWordle.Length == 0 ? 0 : GridWidth);
+         if (mWordle.Length != 5) Write (Mouse);
          else CursorLeft++;
       }
 
       /// <summary>Print entered letter to the console</summary>
       public void Print (char ch) {
          CursorLeft -= 1;
-         Write (mWordle.LCount == 4 ? $"{ch}" : $"{ch}  {Mouse}");
+         Write (mWordle.Length == 4 ? $"{ch}" : $"{ch}  {Mouse}");
       }
 
       /// <summary>Print input grid followed by alphabets</summary>
@@ -61,7 +61,7 @@ namespace A12 {
       /// <summary>Update cursor position following backspace</summary>
       public void UpdateRow () {
          CursorLeft -= 1;
-         if (mWordle.LCount == 5) Write (Mouse);
+         if (mWordle.Length == 5) Write (Mouse);
          else {
             CursorLeft -= 3;
             Write ($"{Mouse}  {Dot}");
@@ -97,14 +97,14 @@ namespace A12 {
          string input = mWordle.Input ?? "";
          for (int j = 0; j < input.Length; j++) {
             char ch = input[j];
-            ConsoleColor col = mWord.Contains (ch) ? (mWord[j] == ch ? ConsoleColor.Green : ConsoleColor.Blue)
-                                                   : ConsoleColor.DarkGray;
+            ForegroundColor = mWord[j] == ch ? ConsoleColor.Green : mWord.Contains (ch) ? ConsoleColor.Blue
+                                                                                        : ConsoleColor.DarkGray;
             // Update color table for printing alphabets
-            if (ColorTable.TryGetValue (ch, out ConsoleColor color)) {
+            if (ColorTable.TryGetValue (ch, out ConsoleColor prev)) {
                // Update color if the letter is not previously found (Letters once found will always be printed green)
-               if (color != ConsoleColor.Green || mWord.Where (l => l == ch).Count () > 1) ColorTable[ch] = color;
-            } else ColorTable.Add (ch, col);
-            ForegroundColor = col;
+               if (prev != ConsoleColor.Green || mWord.Where (l => l == ch).Count () > 1)
+                  ColorTable[ch] = ForegroundColor;
+            } else ColorTable.Add (ch, ForegroundColor);
             Write ($"{ch}  ");
             ResetColor ();
          }
