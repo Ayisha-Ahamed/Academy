@@ -22,10 +22,7 @@ namespace A12 {
       }
 
       /// <summary>Print entered letter to the console</summary>
-      public void Print (char ch) {
-         CursorLeft -= 1;
-         Write (mWordle.Length == 4 ? $"{ch}" : $"{ch}  {Mouse}");
-      }
+      public void Print (char ch) { CursorLeft -= 1; Write (mWordle.Length == 4 ? $"{ch}" : $"{ch}  {Mouse}"); }
 
       /// <summary>Print input grid followed by alphabets</summary>
       public void PrintWindow () {
@@ -62,51 +59,54 @@ namespace A12 {
       public void UpdateRow () {
          CursorLeft -= 1;
          if (mWordle.Length == 5) Write (Mouse);
-         else {
-            CursorLeft -= 3;
-            Write ($"{Mouse}  {Dot}");
-            CursorLeft -= 3;
-         }
+         else { CursorLeft -= 3; Write ($"{Mouse}  {Dot}"); CursorLeft -= 3; }
       }
       #endregion
 
       #region Implementation ----------------------------------------
       // Align cursor to center position
-      void MoveCursorToCenter (int moveLeft = 0) {
-         WriteLine ("\n");
-         CursorLeft = CenterAlign - moveLeft;
-      }
+      void MoveCursorToCenter (int moveLeft = 0) { Write ("\n\n"); CursorLeft = CenterAlign - moveLeft; }
 
       // Move cursor to current input row in grid
       void MoveCursorToTop (int row = 0) => SetCursorPosition (CenterAlign, (row < 0 ? 0 : row) * 2);
 
-      // Print alphabets to console
+      // Prints alphabets to console
       void PrintAlphabets () {
          int maxLeft = CenterAlign + 20;
          MoveCursorToCenter (moveLeft: 8);
          for (char ch = 'A'; ch <= 'Z'; ch++) {
-            if (ColorTable != null && ColorTable.TryGetValue (ch, out ConsoleColor color)) ForegroundColor = color;
-            Write ($"{ch}  ");
+            if (ColorTable != null && ColorTable.TryGetValue (ch, out ConsoleColor color)) PrintLetter (ch, color);
+            else PrintLetter (ch, ConsoleColor.Gray);
             if (CursorLeft > maxLeft) MoveCursorToCenter (8);
-            ResetColor ();
          }
       }
 
-      // Prints valid word to console
+      // Prints a letter to console
+      void PrintLetter (char ch, ConsoleColor color) {
+         ForegroundColor = color;
+         Write ($"{ch}  ");
+         ResetColor ();
+      }
+
+      // Prints input word to console
       void PrintWord () {
          string input = mWordle.Input ?? "";
+         Dictionary<char, Queue<ConsoleColor>> dict = [];
          for (int j = 0; j < input.Length; j++) {
             char ch = input[j];
-            ForegroundColor = mWord[j] == ch ? ConsoleColor.Green : mWord.Contains (ch) ? ConsoleColor.Blue
-                                                                                        : ConsoleColor.DarkGray;
-            // Update color table for printing alphabets
+            mFreq.TryGetValue (ch, out int count);
+            ConsoleColor color = mWord[j] == ch ? ConsoleColor.Green
+                                                : mWord.Contains (ch) ? ConsoleColor.Blue : ConsoleColor.DarkGray;
+            if (!dict.TryGetValue (ch, out Queue<ConsoleColor>? queue)) dict.Add (ch, new ());
+            else if (queue.Count >= count) color = ConsoleColor.DarkGray;
+            dict[ch].Enqueue (color);
+         }
+         foreach (var ch in input) {
+            ConsoleColor next = dict[ch].Dequeue ();
             if (ColorTable.TryGetValue (ch, out ConsoleColor prev)) {
-               // Update color if the letter is not previously found (Letters once found will always be printed green)
-               if (prev != ConsoleColor.Green || mWord.Where (l => l == ch).Count () > 1)
-                  ColorTable[ch] = ForegroundColor;
-            } else ColorTable.Add (ch, ForegroundColor);
-            Write ($"{ch}  ");
-            ResetColor ();
+               if (prev != next && next != ConsoleColor.DarkGray) ColorTable[ch] = next;
+            } else ColorTable.Add (ch, next);
+            PrintLetter (ch, next);
          }
          MoveCursorToCenter ();
       }
@@ -116,9 +116,10 @@ namespace A12 {
       int CenterAlign = (int)(WindowWidth * 0.5) - 8;
       Dictionary<char, ConsoleColor> ColorTable = new (5);
       char Dot = '\u00b7', Mouse = '\u25cc';
+      Dictionary<char, int> mFreq = word.Where (char.IsLetter).GroupBy (c => c).ToDictionary (c => c.Key, c => c.Count ());
+      int GridWidth = 12; // Width of the wordle grid
       string mWord = word;
       Wordle mWordle = wordle;
-      int GridWidth = 12; // Width of the wordle grid
       #endregion
    }
    #endregion
