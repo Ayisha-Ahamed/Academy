@@ -12,9 +12,7 @@ namespace A15;
 /// <summary>Implements priority queue using binary(min) heap</summary>
 public class PriorityQueue<T> where T : IComparable<T> {
    #region Constructors ---------------------------------------------
-   public PriorityQueue () {
-      mQueue = [];
-   }
+   public PriorityQueue () => mQueue = [];
    #endregion
 
    #region Public methods -------------------------------------------
@@ -42,8 +40,8 @@ public class PriorityQueue<T> where T : IComparable<T> {
    // Swap parent node with child node if the child node is smaller than the parent node
    void SiftDown (int index) {
       int leftNode = 2 * index + 1, rightNode = 2 * index + 2;
-      if (!IsValidIndex (leftNode)) return;
-      int smallerNode = IsValidIndex (rightNode) &&
+      if (leftNode >= mCount) return;
+      int smallerNode = rightNode < mCount &&
                         mQueue[leftNode].CompareTo (mQueue[rightNode]) > 0 ? rightNode : leftNode;
       if (mQueue[smallerNode].CompareTo (mQueue[index]) < 0) {
          (mQueue[index], mQueue[smallerNode]) = (mQueue[smallerNode], mQueue[index]);
@@ -59,9 +57,6 @@ public class PriorityQueue<T> where T : IComparable<T> {
          SiftUp (parentNode);
       }
    }
-
-   // Returns if an index position is within the range of the list
-   bool IsValidIndex (int index) => index >= 0 && index < mCount;
    #endregion
 
    #region Private data ---------------------------------------------
