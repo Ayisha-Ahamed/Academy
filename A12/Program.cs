@@ -14,8 +14,6 @@ namespace A12;
 #region class Program -----------------------------------------------------------------------------
 class Program {
    static void Main () {
-      CursorVisible = false;
-      OutputEncoding = Encoding.UTF8;
       new Wordle ().Run ();
    }
 }

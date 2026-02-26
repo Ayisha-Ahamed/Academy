@@ -8,12 +8,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="Data\dictionary-5.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\puzzle-5.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Remove="Data\dictionary-5.txt" />
+    <None Remove="Data\puzzle-5.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\dictionary-5.txt">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Data\puzzle-5.txt">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="dictionary-5.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

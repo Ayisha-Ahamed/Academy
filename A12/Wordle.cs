@@ -6,6 +6,8 @@
 // A12: Wordle.
 // Implementation of Wordle Crossword Puzzle.
 // ------------------------------------------------------------------------------------------------
+using System.Text;
+using System.Reflection;
 using static System.Console;
 
 namespace A12 {
@@ -18,11 +20,12 @@ namespace A12 {
    class Wordle {
       #region Constructors ------------------------------------------
       public Wordle () {
-         string[] Puzzle = [.. File.ReadLines ("Data/puzzle-5.txt")];
-         Word = Puzzle[new Random ().Next (0, Puzzle.Length)];
+         CursorVisible = false;
+         OutputEncoding = Encoding.UTF8;
+         Word = GetWord ();
          mDisplay = new Display (this, Word);
          Buffer = new char[5];
-         Dictionary = [.. File.ReadAllLines ("Data/dictionary-5.txt")];
+         Dictionary = GetFileContent ("A12.Data.dictionary-5.txt");
          mDisplay.PrintWindow ();
       }
       #endregion
@@ -36,7 +39,7 @@ namespace A12 {
       public void Run () {
          while (Tries < 6) {
             Input = GetUserInput ();
-            EState state = IsFound (Input) ? EState.IsFound : (IsAWord (Input) ? EState.IsAWord : EState.IsInvalid);
+            EState state = Word == Input ? EState.IsFound : (IsAWord (Input) ? EState.IsAWord : EState.IsInvalid);
             if (state is not EState.IsInvalid) {
                Tries++; Length = 0;
                mDisplay.PrintWindow ();
@@ -49,6 +52,13 @@ namespace A12 {
       #endregion
 
       #region Implementation ----------------------------------------
+
+      string[] GetFileContent (string name) {
+         using (Stream? stream = Assembly.GetExecutingAssembly ().GetManifestResourceStream (name))
+            if (stream != null) return new StreamReader (stream).ReadToEnd ().Split ("\r\n");
+         throw new FileNotFoundException ($"Could not find file {name}");
+      }
+
       string GetUserInput () {
          ConsoleKeyInfo key;
          mDisplay.AlignCursorForInput ();
@@ -73,16 +83,19 @@ namespace A12 {
          }
       }
 
-      bool IsAWord (string str) => Dictionary.Any (a => a == str);
+      string GetWord () {
+         string[] puzzle = GetFileContent ("A12.Data.puzzle-5.txt");
+         return puzzle[new Random ().Next (0, puzzle.Length)];
+      }
 
-      bool IsFound (string word) => string.Equals (Word, word, StringComparison.OrdinalIgnoreCase);
+      bool IsAWord (string input) => Dictionary.Any (word => word == input);
       #endregion
 
       #region Private Members ---------------------------------------
       string Word;
       char[] Buffer;
       public string? Input;
-      SortedSet<string> Dictionary;
+      string[] Dictionary;
       Display mDisplay;
       #endregion
    }
